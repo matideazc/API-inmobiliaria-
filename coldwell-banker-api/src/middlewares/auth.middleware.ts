@@ -1,0 +1,89 @@
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+
+// Interfaz para el payload del JWT
+interface JwtPayload {
+id: number;
+email: string;
+rol: string;
+}
+
+// Extender el tipo Request de Express para incluir usuario
+declare global {
+namespace Express {
+    interface Request {
+    usuario?: JwtPayload;
+    }
+}
+}
+
+/**
+ * Middleware que valida el JWT del header Authorization
+ * Uso: router.get('/ruta-protegida', autenticar, controller)
+ */
+export const autenticar = (req: Request, res: Response, next: NextFunction) => {
+try {
+    // Obtener el token del header Authorization
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+    res.status(401).json({ 
+        error: 'Token no proporcionado' 
+    });
+    return;
+    }
+
+    // El formato esperado es: "Bearer TOKEN"
+    const token = authHeader.startsWith('Bearer ') 
+    ? authHeader.substring(7) 
+    : authHeader;
+
+    const JWT_SECRET = process.env.JWT_SECRET;
+
+    if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET no configurado en .env');
+    }
+
+    // Verificar y decodificar el token
+    const payload = jwt.verify(token, JWT_SECRET) as JwtPayload;
+
+    // Agregar el usuario al request para usarlo en los controllers
+    req.usuario = payload;
+
+    // Continuar con el siguiente middleware/controller
+    next();
+} catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+    res.status(401).json({ 
+        error: 'Token inválido' 
+    });
+    return;
+    }
+    
+    if (error instanceof jwt.TokenExpiredError) {
+    res.status(401).json({ 
+        error: 'Token expirado' 
+    });
+    return;
+    }
+
+    console.error('Error en autenticación:', error);
+    res.status(500).json({ 
+    error: 'Error interno del servidor' 
+    });
+}
+};
+
+/**
+ * Middleware opcional que verifica si el usuario tiene un rol específico
+ * Uso: router.post('/ruta-admin', autenticar, esAdmin, controller)
+ */
+export const esAdmin = (req: Request, res: Response, next: NextFunction) => {
+if (req.usuario?.rol !== 'ADMIN') {
+    res.status(403).json({ 
+    error: 'Acceso denegado: se requiere rol ADMIN' 
+    });
+    return;
+}
+next();
+};

@@ -1,0 +1,506 @@
+/* ExpedienteDetail.module.css */
+.container {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  padding: 2rem 1rem;
+}
+
+.wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.headerActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.backButton {
+  padding: 0.625rem 1.25rem;
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.backButton:hover {
+  background-color: #4b5563;
+}
+
+.uploadButton {
+  padding: 0.625rem 1.25rem;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.uploadButton:hover {
+  background-color: #2563eb;
+}
+
+.changeStatusButton {
+  padding: 0.625rem 1.25rem;
+  background-color: #64748b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.changeStatusButton:hover {
+  background-color: #475569;
+}
+
+.mandatoButton {
+  padding: 0.625rem 1.25rem;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.mandatoButton:hover {
+  background-color: #059669;
+}
+
+.successMessage {
+  padding: 1rem 1.5rem;
+  background-color: #10b981;
+  color: white;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  text-align: center;
+  animation: slideDown 0.3s ease-out;
+}
+
+.successBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background-color: #10b981;
+  color: white;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  animation: slideDown 0.3s ease-out;
+  flex-wrap: wrap;
+}
+
+.successContent {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.successIcon {
+  font-size: 1.25rem;
+}
+
+.successText {
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.downloadCtaButton {
+  padding: 0.5rem 1rem;
+  background-color: white;
+  color: #10b981;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.downloadCtaButton:hover:not(:disabled) {
+  background-color: #f0fdf4;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.downloadCtaButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.errorBanner {
+  padding: 1rem 1.5rem;
+  background-color: #dc2626;
+  color: white;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  text-align: center;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  padding: 2.5rem;
+  background-color: var(--bg-card);
+  border-radius: 12px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 
+              0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+}
+
+.card h1 {
+  margin: 0 0 1rem 0;
+  font-size: 2rem;
+  color: var(--text-primary);
+}
+
+.card > p {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.section:first-of-type {
+  margin-top: 1.5rem;
+}
+
+.section h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+}
+
+.section p {
+  margin: 0.5rem 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.section ul {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.section li {
+  margin: 0.5rem 0;
+  color: var(--text-secondary);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  color: white;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem 1rem;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+.error {
+  text-align: center;
+  padding: 3rem 1rem;
+  font-size: 1rem;
+  color: #fca5a5;
+}
+
+.notFound {
+  text-align: center;
+  padding: 3rem 1rem;
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+.noDocuments {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.linkButton {
+  background: none;
+  border: none;
+  color: var(--accent-blue);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: inherit;
+  padding: 0;
+  font-family: inherit;
+}
+
+.linkButton:hover {
+  color: var(--accent-blue-hover);
+}
+
+/* Tabla de documentos */
+.documentosTable {
+  margin-top: 1rem;
+  overflow-x: auto;
+}
+
+.documentosTable table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.documentosTable thead {
+  background-color: var(--border-color);
+}
+
+.documentosTable th {
+  padding: 0.875rem 1rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.documentosTable td {
+  padding: 1rem;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.documentosTable tbody tr {
+  transition: background-color 0.2s;
+}
+
+.documentosTable tbody tr:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.viewButton {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: var(--accent-blue);
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.viewButton:hover {
+  background-color: var(--accent-blue-hover);
+  text-decoration: none;
+}
+
+/* Cuando no hay documentos */
+.noDocumentsBox {
+  margin-top: 1rem;
+  padding: 2rem;
+  background-color: var(--bg-secondary);
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.noDocumentsBox p {
+  margin: 0 0 1rem 0;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.uploadFirstButton {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--accent-blue);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.uploadFirstButton:hover {
+  background-color: var(--accent-blue-hover);
+}
+
+/* Sección de Mandato - DESTACADA */
+.mandatoSection {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+  border: 2px solid #10b981;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.2);
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.2);
+  }
+  50% {
+    box-shadow: 0 4px 24px rgba(16, 185, 129, 0.35);
+  }
+}
+
+.mandatoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.mandatoTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mandatoIcon {
+  font-size: 1.75rem;
+  animation: bounce 1s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.mandatoTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #10b981;
+  margin: 0;
+}
+
+.downloadPdfButton {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.downloadPdfButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+}
+
+.downloadPdfButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.downloadPdfButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mandatoBox {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.mandatoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.mandatoRow:last-child {
+  border-bottom: none;
+}
+
+.mandatoLabel {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  margin-right: 1rem;
+}
+
+.mandatoValue {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  text-align: right;
+  word-break: break-word;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .documentosTable {
+    font-size: 0.85rem;
+  }
+
+  .documentosTable th,
+  .documentosTable td {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .mandatoRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .mandatoValue {
+    text-align: left;
+  }
+}

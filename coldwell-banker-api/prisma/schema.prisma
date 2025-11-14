@@ -1,0 +1,108 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Para empezar en local es más fácil sqlite.
+// Cuando pases a producción cambiás a postgresql y cambiás la DATABASE_URL.
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ===== Usuarios del sistema =====
+model Usuario {
+  id           Int       @id @default(autoincrement())
+  nombre       String
+  email        String    @unique
+  hash         String    // password hasheada
+  rol          Rol       @default(ASESOR)
+  createdAt    DateTime  @default(now())
+  expedientes  Expediente[] @relation("AsesorExpedientes")
+}
+
+enum Rol {
+  ASESOR
+  REVISOR
+  ADMIN
+}
+
+// ===== Expedientes =====
+model Expediente {
+  id                Int        @id @default(autoincrement())
+  titulo            String     // título o referencia del expediente
+  descripcion       String?    // descripción opcional
+  propietarioNombre String
+  asesor            Usuario    @relation("AsesorExpedientes", fields: [asesorId], references: [id])
+  asesorId          Int
+  estado            Estado     @default(PENDIENTE)
+  comentariosRevisor String?
+  observaciones     String?    // observaciones del revisor al cambiar el estado
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  documentos        Documento[]
+  mandato           Mandato?
+  informe           InformeIA?
+}
+
+enum Estado {
+  PENDIENTE
+  APROBADO
+  RECHAZADO
+}
+
+// ===== Documentos que sube el asesor =====
+model Documento {
+  id           Int        @id @default(autoincrement())
+  expediente   Expediente @relation(fields: [expedienteId], references: [id], onDelete: Cascade)
+  expedienteId Int
+  tipo         DocTipo
+  nombre       String?    // nombre opcional del documento
+  rutaArchivo  String     // acá va el path o la URL del PDF/foto
+  createdAt    DateTime   @default(now())
+}
+
+enum DocTipo {
+  ESCRITURA
+  DNI
+  API
+  TGI
+  PLANOS
+  MENSURA
+  TASA
+  OTRO
+  PDF_COMPLETO  // PDF único con toda la info de la propiedad
+}
+
+// ===== Mandato que se genera solo si el expediente está aprobado =====
+model Mandato {
+  id            Int            @id @default(autoincrement())
+  expediente    Expediente     @relation(fields: [expedienteId], references: [id], onDelete: Cascade)
+  expedienteId  Int            @unique  // Un expediente solo puede tener un mandato
+  plazoDias     Int                     // Plazo en días
+  monto         Float                   // Monto del mandato
+  estado        MandatoEstado  @default(BORRADOR)
+  observaciones String?                 // Observaciones opcionales
+  firmadoPor    String?                 // Nombre o email de quien firmó
+  firmadoFecha  DateTime?               // Cuándo se firmó
+  documentoUrl  String?                 // Link al PDF firmado o generado
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+enum MandatoEstado {
+  BORRADOR     // Se acaba de generar
+  ENVIADO      // Se envió al propietario para firmar
+  FIRMADO      // Ya está firmado
+  ANULADO      // Fue anulado
+}
+
+// ===== Informe de IA (opcional, pero lo dejamos listo) =====
+model InformeIA {
+  id           Int        @id @default(autoincrement())
+  expediente   Expediente @relation(fields: [expedienteId], references: [id])
+  expedienteId Int        @unique
+  texto        String
+  createdAt    DateTime   @default(now())
+}
