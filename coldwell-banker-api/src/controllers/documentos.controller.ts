@@ -98,12 +98,14 @@ export const crearDocumento = async (req: Request, res: Response) => {
 
     // ========== VALIDACIONES COMUNES ==========
     
-    const { expedienteId, tipo, nombre } = req.body;
+    // Soportar tanto 'expedienteId' (legacy) como 'propiedadId' (nuevo)
+    const { expedienteId: expedienteIdLegacy, propiedadId, tipo, nombre } = req.body;
+    const expedienteId = propiedadId || expedienteIdLegacy;
 
-    // Validación: expedienteId es obligatorio (en ambos modos)
+    // Validación: expedienteId (o propiedadId) es obligatorio (en ambos modos)
     if (!expedienteId) {
       res.status(400).json({
-        error: 'El campo "expedienteId" es obligatorio'
+        error: 'El campo "propiedadId" o "expedienteId" es obligatorio'
       });
       return;
     }

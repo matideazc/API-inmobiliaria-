@@ -31,9 +31,12 @@ enum Rol {
 // ===== Expedientes =====
 model Expediente {
   id                Int        @id @default(autoincrement())
-  titulo            String     // título o referencia del expediente
+  titulo            String     // título o referencia del expediente (nombre de la propiedad)
   descripcion       String?    // descripción opcional
   propietarioNombre String
+  direccion         String?    // dirección de la propiedad
+  api               String?    // número de API de la propiedad
+  emails            String?    // emails relacionados con la propiedad (separados por coma)
   asesor            Usuario    @relation("AsesorExpedientes", fields: [asesorId], references: [id])
   asesorId          Int
   estado            Estado     @default(PENDIENTE)

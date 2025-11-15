@@ -15,7 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 // Servir archivos estáticos de la carpeta uploads
-// Esto permite acceder a: http://localhost:3000/uploads/expedientes/{id}/archivo.pdf
+// Esto permite acceder a: http://localhost:3000/uploads/propiedades/{id}/archivo.pdf
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Ruta de health check

@@ -15,7 +15,7 @@ interface UploadResponse {
 }
 
 const UploadDocument: React.FC = () => {
-  const { expedienteId } = useParams<{ expedienteId: string }>();
+  const { id } = useParams<{ id: string }>();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -59,8 +59,8 @@ const UploadDocument: React.FC = () => {
       return;
     }
 
-    if (!expedienteId) {
-      setError('No se pudo identificar el expediente');
+    if (!id) {
+      setError('No se pudo identificar la propiedad');
       return;
     }
 
@@ -71,7 +71,7 @@ const UploadDocument: React.FC = () => {
     try {
       // Crear FormData para enviar el archivo
       const formData = new FormData();
-      formData.append('expedienteId', expedienteId);
+      formData.append('expedienteId', id);
       formData.append('tipo', 'PDF_COMPLETO');
       formData.append('archivo', selectedFile);
 
@@ -88,9 +88,9 @@ const UploadDocument: React.FC = () => {
       const fileInput = document.getElementById('file-input') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
 
-      // Redirigir al detalle del expediente después de 2 segundos
+      // Redirigir al detalle de la propiedad después de 2 segundos
       setTimeout(() => {
-        navigate(`/expedientes/${expedienteId}`);
+        navigate(`/propiedades/${id}`);
       }, 2000);
 
     } catch (err: any) {
@@ -105,20 +105,20 @@ const UploadDocument: React.FC = () => {
   };
 
   const handleCancel = () => {
-    navigate(`/expedientes/${expedienteId}`);
+    navigate(`/propiedades/${id}`);
   };
 
   return (
     <div className={styles.container}>
       <div className={styles.wrapper}>
         <button onClick={handleCancel} className={styles.backButton}>
-          ← Volver al expediente
+          ← Volver a la propiedad
         </button>
 
         <div className={styles.card}>
           <h1 className={styles.title}>Subir Documento PDF</h1>
           <p className={styles.subtitle}>
-            Expediente #{expedienteId}
+            Propiedad #{id}
           </p>
 
           <form onSubmit={handleSubmit} className={styles.form}>

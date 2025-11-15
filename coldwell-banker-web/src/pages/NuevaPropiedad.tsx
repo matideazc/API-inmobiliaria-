@@ -1,33 +1,42 @@
-// src/pages/NewExpediente.tsx
+// src/pages/NuevaPropiedad.tsx
 import React, { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
-import styles from './NewExpediente.module.css';
+import apiClient from '../services/api';
+import styles from './NuevaPropiedad.module.css';
 
 // lo que mandamos al backend
-interface NewExpedienteData {
+interface NewPropiedadData {
   titulo: string;
   propietarioNombre: string;
+  direccion?: string;
+  api?: string;
+  emails?: string;
   descripcion?: string;
   estado: 'PENDIENTE';
 }
 
 // lo que (según tu backend) nos devuelve al crear
-interface CreatedExpedienteResponse {
+interface CreatedPropiedadResponse {
   mensaje: string;
   expediente: {
     id: number;
     titulo: string;
     propietarioNombre: string;
+    direccion?: string | null;
+    api?: string | null;
+    emails?: string | null;
     estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
     createdAt: string;
     descripcion?: string | null;
   };
 }
 
-const NewExpediente: React.FC = () => {
+const NuevaPropiedad: React.FC = () => {
   const [titulo, setTitulo] = useState('');
   const [propietarioNombre, setPropietarioNombre] = useState('');
+  const [direccion, setDireccion] = useState('');
+  const [numeroApi, setNumeroApi] = useState('');
+  const [emails, setEmails] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -39,7 +48,7 @@ const NewExpediente: React.FC = () => {
 
     // validaciones básicas
     if (!titulo.trim()) {
-      setError('El título es obligatorio');
+      setError('El nombre de la propiedad es obligatorio');
       return;
     }
     if (!propietarioNombre.trim()) {
@@ -50,36 +59,54 @@ const NewExpediente: React.FC = () => {
     setLoading(true);
 
     try {
-      // armar body
-      const body: NewExpedienteData = {
+      // Verificar que hay token
+      const token = localStorage.getItem('token');
+      console.log('🔑 Token presente:', !!token);
+      
+      // armar body (temporalmente sin los campos nuevos hasta que backend esté listo)
+      const body: any = {
         titulo: titulo.trim(),
         propietarioNombre: propietarioNombre.trim(),
         estado: 'PENDIENTE',
       };
 
+      // TODO: Descomentar cuando el backend acepte estos campos
+      // if (direccion.trim()) {
+      //   body.direccion = direccion.trim();
+      // }
+      // if (numeroApi.trim()) {
+      //   body.api = numeroApi.trim();
+      // }
+      // if (emails.trim()) {
+      //   body.emails = emails.trim();
+      // }
       if (descripcion.trim()) {
         body.descripcion = descripcion.trim();
       }
 
+      console.log('📤 Enviando al backend:', body);
+
       // POST al backend
-      const response = await api.post<CreatedExpedienteResponse>('/expedientes', body);
+      const response = await apiClient.post<CreatedPropiedadResponse>('/expedientes', body);
+      
+      console.log('✅ Respuesta del backend:', response.data);
 
       // acá está el cambio importante 👉 tomamos el id desde response.data.expediente.id
-      const expedienteId = response.data?.expediente?.id;
+      const propiedadId = response.data?.expediente?.id;
 
-      if (!expedienteId) {
+      if (!propiedadId) {
         // si por algún motivo no vino, volvemos a la lista
-        navigate('/expedientes');
+        navigate('/propiedades');
         return;
       }
 
       // redirigimos al detalle
-      navigate(`/expedientes/${expedienteId}`);
+      navigate(`/propiedades/${propiedadId}`);
     } catch (err: any) {
       setError(
         err?.response?.data?.error ||
           err?.response?.data?.mensaje ||
-          'Error al crear el expediente. Intentá nuevamente.'
+          'Error al crear la propiedad. Intentá nuevamente.'
       );
     } finally {
       setLoading(false);
@@ -87,22 +114,22 @@ const NewExpediente: React.FC = () => {
   };
 
   const handleCancel = () => {
-    navigate('/expedientes');
+    navigate('/propiedades');
   };
 
   return (
     <div className={styles.container}>
       <div className={styles.wrapper}>
         <div className={styles.card}>
-          <h1 className={styles.title}>Crear nuevo expediente</h1>
+          <h1 className={styles.title}>Cargar nueva propiedad</h1>
           <p className={styles.subtitle}>
-            Completá los datos del expediente. Después podrás subir los documentos necesarios.
+            Completá los datos de la propiedad. Después podrás subir los documentos necesarios.
           </p>
 
           <form onSubmit={handleSubmit} className={styles.form}>
             <div className={styles.inputGroup}>
               <label htmlFor="titulo" className={styles.label}>
-                Título <span className={styles.required}>*</span>
+                Nombre de la propiedad <span className={styles.required}>*</span>
               </label>
               <input
                 id="titulo"
@@ -129,6 +156,54 @@ const NewExpediente: React.FC = () => {
                 className={styles.input}
                 placeholder="Ej: Juan Pérez"
                 maxLength={150}
+              />
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label htmlFor="direccion" className={styles.label}>
+                Dirección <span className={styles.optional}>(opcional)</span>
+              </label>
+              <input
+                id="direccion"
+                type="text"
+                value={direccion}
+                onChange={(e) => setDireccion(e.target.value)}
+                disabled={loading}
+                className={styles.input}
+                placeholder="Ej: Av. 9 de Julio 1234"
+                maxLength={250}
+              />
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label htmlFor="api" className={styles.label}>
+                Número de API <span className={styles.optional}>(opcional)</span>
+              </label>
+              <input
+                id="api"
+                type="text"
+                value={numeroApi}
+                onChange={(e) => setNumeroApi(e.target.value)}
+                disabled={loading}
+                className={styles.input}
+                placeholder="Ej: 12345678"
+                maxLength={100}
+              />
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label htmlFor="emails" className={styles.label}>
+                Emails relacionados <span className={styles.optional}>(opcional)</span>
+              </label>
+              <input
+                id="emails"
+                type="text"
+                value={emails}
+                onChange={(e) => setEmails(e.target.value)}
+                disabled={loading}
+                className={styles.input}
+                placeholder="Ej: cliente@email.com, asesor@email.com"
+                maxLength={300}
               />
             </div>
 
@@ -161,14 +236,14 @@ const NewExpediente: React.FC = () => {
                 Cancelar
               </button>
               <button type="submit" disabled={loading} className={styles.submitButton}>
-                {loading ? 'Creando...' : '✅ Crear expediente'}
+                {loading ? 'Creando...' : '✅ Crear propiedad'}
               </button>
             </div>
           </form>
 
           <div className={styles.infoBox}>
             <p className={styles.infoText}>
-              📘 El expediente se creará con estado <strong>PENDIENTE</strong>. Un revisor o
+              📘 La propiedad se creará con estado <strong>PENDIENTE</strong>. Un revisor o
               administrador podrá cambiar el estado más adelante.
             </p>
           </div>
@@ -178,4 +253,4 @@ const NewExpediente: React.FC = () => {
   );
 };
 
-export default NewExpediente;
+export default NuevaPropiedad;

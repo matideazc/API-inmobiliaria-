@@ -1,9 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
-import ExpedientesList from './pages/ExpedientesList';
-import ExpedienteDetail from './pages/ExpedienteDetail';
+import Home from './pages/Home';
+import PropiedadesList from './pages/PropiedadesList';
+import PropiedadDetail from './pages/PropiedadDetail';
 import UploadDocument from './pages/UploadDocument';
-import NewExpediente from './pages/NewExpediente';
+import NuevaPropiedad from './pages/NuevaPropiedad';
 import MandatoForm from './pages/MandatoForm';
 import ProtectedRoute from './routes/ProtectedRoute';
 import AppShell from './layout/AppShell';
@@ -18,18 +19,16 @@ function App() {
 
           {/* Rutas protegidas */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/expedientes" element={<ExpedientesList />} />
-            <Route path="/expedientes/nuevo" element={<NewExpediente />} />
-            <Route path="/expedientes/:id" element={<ExpedienteDetail />} />
-            <Route path="/expedientes/:id/mandato" element={<MandatoForm />} />
-            <Route path="/expedientes/:expedienteId/upload" element={<UploadDocument />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/propiedades" element={<PropiedadesList />} />
+            <Route path="/propiedades/nueva" element={<NuevaPropiedad />} />
+            <Route path="/propiedades/:id" element={<PropiedadDetail />} />
+            <Route path="/propiedades/:id/mandato" element={<MandatoForm />} />
+            <Route path="/propiedades/:id/upload" element={<UploadDocument />} />
           </Route>
 
-          {/* Redirigir / a /expedientes */}
-          <Route path="/" element={<Navigate to="/expedientes" replace />} />
-
           {/* 404 - Not Found */}
-          <Route path="*" element={<Navigate to="/expedientes" replace />} />
+          <Route path="*" element={<Navigate to="/propiedades" replace />} />
         </Routes>
       </AppShell>
     </BrowserRouter>

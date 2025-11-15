@@ -64,6 +64,50 @@
   background-color: #475569;
 }
 
+.adminActions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.approveButton {
+  padding: 0.75rem 1.5rem;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+.approveButton:hover {
+  background-color: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
+}
+
+.rejectButton {
+  padding: 0.75rem 1.5rem;
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+}
+
+.rejectButton:hover {
+  background-color: #b91c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.4);
+}
+
 .mandatoButton {
   padding: 0.625rem 1.25rem;
   background-color: #10b981;
@@ -329,6 +373,26 @@
   text-decoration: none;
 }
 
+.viewDocumentButton {
+  display: inline-block;
+  padding: 0.625rem 1.5rem;
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.viewDocumentButton:hover {
+  background-color: #2563eb;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
+}
+
 /* Cuando no hay documentos */
 .noDocumentsBox {
   margin-top: 1rem;
@@ -483,6 +547,195 @@
   word-break: break-word;
 }
 
+/* Nuevos estilos para mejor UI */
+.titleSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+.statusPENDIENTE {
+  background-color: #fbbf24;
+  color: #78350f;
+}
+
+.statusAPROBADO {
+  background-color: #10b981;
+  color: white;
+}
+
+.statusRECHAZADO {
+  background-color: #ef4444;
+  color: white;
+}
+
+.ownerInfo {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  font-size: 1.05rem;
+}
+
+.statusAlert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background-color: #1e3a8a;
+  border-left: 4px solid #3b82f6;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+}
+
+.statusAlert p {
+  margin: 0;
+  color: #dbeafe;
+  line-height: 1.5;
+}
+
+.alertSuccess {
+  background-color: #064e3b;
+  border-left-color: #10b981;
+}
+
+.alertSuccess p {
+  color: #d1fae5;
+}
+
+.alertDanger {
+  background-color: #7f1d1d;
+  border-left-color: #ef4444;
+}
+
+.alertDanger p {
+  color: #fee2e2;
+}
+
+.alertIcon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.observationsBox {
+  background-color: #1e293b;
+  padding: 1rem;
+  border-radius: 6px;
+  border-left: 3px solid #64748b;
+}
+
+.observationsBox p {
+  margin: 0;
+  color: #cbd5e0;
+  line-height: 1.6;
+}
+
+.mandatoExistente {
+  background-color: #064e3b;
+  border: 1px solid #10b981;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.mandatoHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #065f46;
+  color: #d1fae5;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.mandatoIcon {
+  font-size: 1.5rem;
+}
+
+.mandatoDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mandatoRow {
+  display: flex;
+  justify-content: space-between;
+  color: #d1fae5;
+}
+
+.mandatoNoGenerado {
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background-color: #1e293b;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.mandatoMessage {
+  color: #cbd5e0;
+  margin-bottom: 1rem;
+}
+
+.generateMandatoButton {
+  padding: 0.75rem 2rem;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.generateMandatoButton:hover {
+  background-color: #059669;
+  transform: translateY(-2px);
+}
+
+.mandatoDisabled {
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.lockIcon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.mandatoDisabled p {
+  color: #cbd5e0;
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.waitingText {
+  color: #fbbf24 !important;
+  font-weight: 500;
+  margin-top: 1rem !important;
+}
+
+.rejectedText {
+  color: #ef4444 !important;
+  font-weight: 500;
+  margin-top: 1rem !important;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .documentosTable {
@@ -502,5 +755,10 @@
 
   .mandatoValue {
     text-align: left;
+  }
+  
+  .titleSection {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

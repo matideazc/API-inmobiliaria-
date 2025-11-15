@@ -1,9 +1,7 @@
 // src/layout/AppShell.tsx
 import type { ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
-import Sidebar from './Sidebar';
 import Topbar from './Topbar';
-import Breadcrumbs from './Breadcrumbs';
 import styles from './AppShell.module.css';
 
 interface AppShellProps {
@@ -21,13 +19,9 @@ export default function AppShell({ children }: AppShellProps) {
   }
 
   return (
-    <div className={styles.shell}>
-      <Sidebar />
-      <div className={styles.main}>
-        <Topbar />
-        <Breadcrumbs />
-        <div className={styles.content}>{children}</div>
-      </div>
+    <div className={styles.shellNoSidebar}>
+      <Topbar />
+      <div className={styles.contentNoSidebar}>{children}</div>
     </div>
   );
 }

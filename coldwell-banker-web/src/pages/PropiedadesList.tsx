@@ -1,4 +1,4 @@
-// src/pages/ExpedientesList.tsx
+// src/pages/PropiedadesList.tsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchExpedientes } from '../services/api';
@@ -7,7 +7,7 @@ import PageContainer from '../layout/PageContainer';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
-import styles from './ExpedientesList.module.css';
+import styles from './PropiedadesList.module.css';
 
 interface Usuario {
   id: number;
@@ -24,7 +24,7 @@ interface Mandato {
   createdAt: string;
 }
 
-interface Expediente {
+interface Propiedad {
   id: number;
   titulo: string;
   propietarioNombre: string;
@@ -35,8 +35,8 @@ interface Expediente {
   mandato?: Mandato | null;
 }
 
-const ExpedientesList: React.FC = () => {
-  const [expedientes, setExpedientes] = useState<Expediente[]>([]);
+const PropiedadesList: React.FC = () => {
+  const [propiedades, setPropiedades] = useState<Propiedad[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [page, setPage] = useState(1);
@@ -46,11 +46,11 @@ const ExpedientesList: React.FC = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    loadExpedientes(page);
+    loadPropiedades(page);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, user]);
 
-  const loadExpedientes = async (pageToLoad: number) => {
+  const loadPropiedades = async (pageToLoad: number) => {
     if (!user) return;
 
     try {
@@ -69,14 +69,14 @@ const ExpedientesList: React.FC = () => {
 
       const response = await fetchExpedientes(params);
 
-      let lista: Expediente[] = response.data || [];
+      let lista: Propiedad[] = response.data || [];
 
       // Filtro client-side adicional para ASESOR (red de contención)
       if (user.rol === 'ASESOR') {
         lista = lista.filter(exp => exp.asesor?.id === user.id);
       }
 
-      setExpedientes(lista);
+      setPropiedades(lista);
 
       // Leer paginación del backend
       if (response.pagination) {
@@ -85,8 +85,8 @@ const ExpedientesList: React.FC = () => {
         setTotalPages(1);
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Error al cargar expedientes');
-      setExpedientes([]);
+      setError(err.response?.data?.error || 'Error al cargar propiedades');
+      setPropiedades([]);
     } finally {
       setLoading(false);
     }
@@ -127,7 +127,7 @@ const ExpedientesList: React.FC = () => {
     return (
       <PageContainer>
         <div className={styles.loadingContainer}>
-          <p className={styles.loadingText}>Cargando expedientes...</p>
+          <p className={styles.loadingText}>Cargando propiedades...</p>
         </div>
       </PageContainer>
     );
@@ -138,7 +138,7 @@ const ExpedientesList: React.FC = () => {
       <PageContainer>
         <div className={styles.errorContainer}>
           <p className={styles.errorText}>❌ {error}</p>
-          <Button onClick={() => loadExpedientes(page)} variant="secondary">
+          <Button onClick={() => loadPropiedades(page)} variant="secondary">
             Reintentar
           </Button>
         </div>
@@ -148,60 +148,60 @@ const ExpedientesList: React.FC = () => {
 
   return (
     <PageContainer
-      title="Expedientes"
+      title="Propiedades"
       actions={
-        <Button onClick={() => navigate('/expedientes/nuevo')} variant="primary">
-          <span>+</span> Nuevo expediente
+        <Button onClick={() => navigate('/propiedades/nueva')} variant="primary">
+          <span>+</span> Nueva propiedad
         </Button>
       }
     >
-      {expedientes.length === 0 ? (
+      {propiedades.length === 0 ? (
         <div className={styles.emptyState}>
-          <p className={styles.emptyText}>No hay expedientes para mostrar</p>
-          <Button onClick={() => navigate('/expedientes/nuevo')} variant="primary">
-            ➕ Crear el primer expediente
+          <p className={styles.emptyText}>No hay propiedades para mostrar</p>
+          <Button onClick={() => navigate('/propiedades/nueva')} variant="primary">
+            ➕ Crear la primera propiedad
           </Button>
         </div>
       ) : (
         <>
           <div className={styles.grid}>
-            {expedientes.map((exp) => (
+            {propiedades.map((prop) => (
               <Card
-                key={exp.id}
+                key={prop.id}
                 hover
-                onClick={() => navigate(`/expedientes/${exp.id}`)}
+                onClick={() => navigate(`/propiedades/${prop.id}`)}
                 className={styles.card}
               >
                 <div className={styles.cardHeader}>
-                  <h3 className={styles.cardTitle}>{exp.titulo}</h3>
-                  <Badge variant={getEstadoBadgeVariant(exp.estado)}>
-                    {exp.estado}
+                  <h3 className={styles.cardTitle}>{prop.titulo}</h3>
+                  <Badge variant={getEstadoBadgeVariant(prop.estado)}>
+                    {prop.estado}
                   </Badge>
                 </div>
 
                 <div className={styles.cardBody}>
                   <div className={styles.cardRow}>
                     <span className={styles.cardLabel}>Propietario:</span>
-                    <span className={styles.cardValue}>{exp.propietarioNombre}</span>
+                    <span className={styles.cardValue}>{prop.propietarioNombre}</span>
                   </div>
 
-                  {exp.asesor && (
+                  {prop.asesor && (
                     <div className={styles.cardRow}>
                       <span className={styles.cardLabel}>Asesor:</span>
-                      <span className={styles.cardValue}>{exp.asesor.nombre}</span>
+                      <span className={styles.cardValue}>{prop.asesor.nombre}</span>
                     </div>
                   )}
 
                   <div className={styles.cardRow}>
                     <span className={styles.cardLabel}>Fecha:</span>
-                    <span className={styles.cardValue}>{formatFecha(exp.createdAt)}</span>
+                    <span className={styles.cardValue}>{formatFecha(prop.createdAt)}</span>
                   </div>
 
-                  {exp.mandato && (
+                  {prop.mandato && (
                     <div className={styles.mandatoChip}>
                       <span className={styles.mandatoIcon}>📄</span>
                       <span className={styles.mandatoText}>
-                        Mandato: {formatMonto(exp.mandato.monto)} • {exp.mandato.plazo}
+                        Mandato: {formatMonto(prop.mandato.monto)} • {prop.mandato.plazo}
                       </span>
                     </div>
                   )}
@@ -238,4 +238,4 @@ const ExpedientesList: React.FC = () => {
   );
 };
 
-export default ExpedientesList;
+export default PropiedadesList;

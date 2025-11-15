@@ -282,7 +282,7 @@ try {
  */
 export const crearExpediente = async (req: Request, res: Response) => {
 try {
-    const { titulo, descripcion, propietarioNombre } = req.body;
+    const { titulo, descripcion, propietarioNombre, direccion, api, emails } = req.body;
 
     // Validación: el título es obligatorio
     if (!titulo || titulo.trim() === '') {
@@ -317,6 +317,9 @@ try {
         titulo: titulo.trim(),
         descripcion: descripcion?.trim() || null,
         propietarioNombre: propietarioNombre.trim(),
+        direccion: direccion && direccion.trim() ? direccion.trim() : null,
+        api: api && api.trim() ? api.trim() : null,
+        emails: emails && emails.trim() ? emails.trim() : null,
         asesorId: usuarioId
         // estado por defecto es PENDIENTE (definido en el schema)
     },

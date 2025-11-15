@@ -21,6 +21,20 @@
   background-color: var(--bg);
 }
 
+/* Layout sin sidebar */
+.shellNoSidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--bg);
+}
+
+.contentNoSidebar {
+  flex: 1;
+  overflow-y: auto;
+  background-color: var(--bg);
+}
+
 /* Cuando el sidebar está colapsado */
 @media (max-width: 1024px) {
   .main {

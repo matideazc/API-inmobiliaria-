@@ -7,7 +7,7 @@ import { Request } from 'express';
  * Configuración de multer para subida de archivos PDF
  * 
  * Almacenamiento:
- * - Por ahora guarda los archivos localmente en: uploads/expedientes/{expedienteId}/
+ * - Por ahora guarda los archivos localmente en: uploads/propiedades/{expedienteId}/
  * - TODO: Reemplazar por subida a OneDrive cuando esté listo
  * 
  * Validaciones:
@@ -18,18 +18,19 @@ import { Request } from 'express';
 
 // Configuración del almacenamiento
 const storage = multer.diskStorage({
-  // Determinar la carpeta de destino según el expedienteId
+  // Determinar la carpeta de destino según el expedienteId o propiedadId
   destination: (req: Request, file: Express.Multer.File, cb) => {
-    const expedienteId = req.body.expedienteId;
+    // Soportar tanto 'expedienteId' (legacy) como 'propiedadId' (nuevo)
+    const expedienteId = req.body.propiedadId || req.body.expedienteId;
     
     if (!expedienteId) {
-      cb(new Error('El campo expedienteId es obligatorio'), '');
+      cb(new Error('El campo propiedadId o expedienteId es obligatorio'), '');
       return;
     }
 
-    // Carpeta: uploads/expedientes/{expedienteId}
+    // Carpeta: uploads/propiedades/{expedienteId}
     // TODO: Reemplazar por OneDrive - esta carpeta será temporal
-    const uploadPath = path.join('uploads', 'expedientes', expedienteId.toString());
+    const uploadPath = path.join('uploads', 'propiedades', expedienteId.toString());
     
     // Crear la carpeta si no existe (recursive: true crea toda la ruta)
     if (!fs.existsSync(uploadPath)) {
@@ -41,12 +42,13 @@ const storage = multer.diskStorage({
 
   // Generar nombre de archivo único
   filename: (req: Request, file: Express.Multer.File, cb) => {
-    const expedienteId = req.body.expedienteId;
+    // Soportar tanto 'expedienteId' (legacy) como 'propiedadId' (nuevo)
+    const expedienteId = req.body.propiedadId || req.body.expedienteId;
     const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
     const extension = path.extname(file.originalname);
     
-    // Formato: expediente-{id}-{timestamp}.pdf
-    const filename = `expediente-${expedienteId}-${timestamp}${extension}`;
+    // Formato: propiedad-{id}-{timestamp}.pdf
+    const filename = `propiedad-${expedienteId}-${timestamp}${extension}`;
     
     cb(null, filename);
   }

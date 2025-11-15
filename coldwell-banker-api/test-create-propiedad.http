@@ -1,0 +1,13 @@
+### Test crear propiedad
+POST http://localhost:3000/expedientes
+Content-Type: application/json
+Authorization: Bearer TU_TOKEN_AQUI
+
+{
+  "titulo": "Casa de prueba",
+  "propietarioNombre": "Juan Pérez",
+  "direccion": "Calle Falsa 123",
+  "api": "123456",
+  "emails": "test@example.com",
+  "descripcion": "Propiedad de prueba"
+}
