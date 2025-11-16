@@ -1,0 +1,125 @@
+/**
+ * Servicio de propiedades
+ * Conecta con los endpoints de propiedades del backend
+ */
+
+import { apiClient } from './client';
+import { Property, CreatePropertyDto, UpdatePropertyStatusDto } from '../types';
+
+/**
+ * API de propiedades
+ * ⚠️ Ajustar rutas según tu backend real
+ */
+export const propertiesApi = {
+  /**
+   * Obtener propiedades del asesor logueado
+   * ⚠️ Ruta ejemplo: GET /propiedades/mis-propiedades
+   */
+  getMyProperties: async (): Promise<Property[]> => {
+    console.log('🏠 Obteniendo propiedades del usuario...');
+    try {
+      const response = await apiClient.get<{ data: Property[] }>('/propiedades');
+      console.log('✅ Propiedades recibidas:', response.data);
+      return response.data.data || [];
+    } catch (error: any) {
+      console.error('❌ Error al obtener propiedades:', error);
+      console.error('❌ Error response:', error.response);
+      throw error;
+    }
+  },
+
+  /**
+   * Obtener todas las propiedades (solo ADMIN)
+   * ⚠️ Ruta ejemplo: GET /propiedades
+   */
+  getAllProperties: async (): Promise<Property[]> => {
+    console.log('🏠 Obteniendo todas las propiedades (ADMIN)...');
+    try {
+      const response = await apiClient.get<{ data: Property[] }>('/propiedades');
+      console.log('✅ Propiedades recibidas:', response.data);
+      return response.data.data || [];
+    } catch (error: any) {
+      console.error('❌ Error al obtener propiedades:', error);
+      console.error('❌ Error response:', error.response);
+      throw error;
+    }
+  },
+
+  /**
+   * Obtener una propiedad por ID
+   * ⚠️ Ruta ejemplo: GET /propiedades/:id
+   */
+  getPropertyById: async (id: string): Promise<Property> => {
+    const response = await apiClient.get<Property>(`/propiedades/${id}`);
+    return response.data;
+  },
+
+  /**
+   * Crear nueva propiedad
+   * ⚠️ Ruta ejemplo: POST /propiedades
+   */
+  createProperty: async (data: CreatePropertyDto): Promise<Property> => {
+    console.log('🏗️ Creando nueva propiedad:', data);
+    try {
+      const response = await apiClient.post<Property>('/propiedades', data);
+      console.log('✅ Propiedad creada:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ Error al crear propiedad:', error);
+      console.error('❌ Error response:', error.response?.data);
+      console.error('❌ Status:', error.response?.status);
+      throw error;
+    }
+  },
+
+  /**
+   * Actualizar propiedad existente
+   * ⚠️ Ruta ejemplo: PUT /propiedades/:id
+   */
+  updateProperty: async (id: string, data: Partial<CreatePropertyDto>): Promise<Property> => {
+    const response = await apiClient.put<Property>(`/propiedades/${id}`, data);
+    return response.data;
+  },
+
+  /**
+   * Actualizar estado de propiedad (ADMIN)
+   * PUT /propiedades/:id/estado
+   */
+  updatePropertyStatus: async (id: string, data: UpdatePropertyStatusDto): Promise<Property> => {
+    console.log('🔄 Actualizando estado de propiedad:', id, data);
+    try {
+      const response = await apiClient.put<{ data: Property }>(`/propiedades/${id}/estado`, data);
+      console.log('✅ Estado actualizado:', response.data);
+      return response.data.data;
+    } catch (error: any) {
+      console.error('❌ Error al actualizar estado:', error);
+      console.error('❌ Error response:', error.response?.data);
+      throw error;
+    }
+  },
+
+  /**
+   * Subir documento a una propiedad
+   * ⚠️ Ruta ejemplo: POST /propiedades/:id/documentos
+   */
+  uploadDocument: async (propertyId: string, formData: FormData): Promise<any> => {
+    const response = await apiClient.post(
+      `/propiedades/${propertyId}/documentos`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  },
+
+  /**
+   * Eliminar propiedad
+   * ⚠️ Ruta ejemplo: DELETE /propiedades/:id
+   */
+  deleteProperty: async (id: string): Promise<void> => {
+    await apiClient.delete(`/propiedades/${id}`);
+  },
+};
