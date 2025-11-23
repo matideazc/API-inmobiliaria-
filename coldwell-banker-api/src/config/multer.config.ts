@@ -14,6 +14,7 @@ import { Request } from 'express';
  * - Solo acepta archivos PDF (application/pdf o .pdf)
  * - Genera nombres únicos con timestamp para evitar sobrescrituras
  * - Crea carpetas automáticamente si no existen
+ * - SEGURIDAD: Previene path traversal validando expedienteId
  */
 
 // Configuración del almacenamiento
@@ -21,35 +22,56 @@ const storage = multer.diskStorage({
   // Determinar la carpeta de destino según el expedienteId o propiedadId
   destination: (req: Request, file: Express.Multer.File, cb) => {
     // Soportar tanto 'expedienteId' (legacy) como 'propiedadId' (nuevo)
-    const expedienteId = req.body.propiedadId || req.body.expedienteId;
-    
-    if (!expedienteId) {
+    const expedienteIdRaw = req.body.propiedadId || req.body.expedienteId;
+
+    if (!expedienteIdRaw) {
       cb(new Error('El campo propiedadId o expedienteId es obligatorio'), '');
       return;
     }
 
-    // Carpeta: uploads/propiedades/{expedienteId}
-    // TODO: Reemplazar por OneDrive - esta carpeta será temporal
-    const uploadPath = path.join('uploads', 'propiedades', expedienteId.toString());
-    
+    // SEGURIDAD: Validar que sea un número entero positivo para prevenir path traversal
+    const expedienteId = parseInt(expedienteIdRaw);
+    if (isNaN(expedienteId) || expedienteId <= 0) {
+      cb(new Error('El expedienteId debe ser un número positivo válido'), '');
+      return;
+    }
+
+    // Usar ruta absoluta para mayor seguridad
+    const uploadPath = path.join(process.cwd(), 'uploads', 'propiedades', expedienteId.toString());
+
+    // SEGURIDAD: Validar que la ruta final está dentro de uploads/
+    const uploadsBase = path.join(process.cwd(), 'uploads');
+    if (!uploadPath.startsWith(uploadsBase)) {
+      cb(new Error('Ruta de archivo inválida'), '');
+      return;
+    }
+
     // Crear la carpeta si no existe (recursive: true crea toda la ruta)
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
-    
+
     cb(null, uploadPath);
   },
 
   // Generar nombre de archivo único
   filename: (req: Request, file: Express.Multer.File, cb) => {
     // Soportar tanto 'expedienteId' (legacy) como 'propiedadId' (nuevo)
-    const expedienteId = req.body.propiedadId || req.body.expedienteId;
+    const expedienteIdRaw = req.body.propiedadId || req.body.expedienteId;
+
+    // SEGURIDAD: Validar que sea un número entero positivo
+    const expedienteId = parseInt(expedienteIdRaw);
+    if (isNaN(expedienteId) || expedienteId <= 0) {
+      cb(new Error('El expedienteId debe ser un número positivo válido'), '');
+      return;
+    }
+
     const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
     const extension = path.extname(file.originalname);
-    
+
     // Formato: propiedad-{id}-{timestamp}.pdf
     const filename = `propiedad-${expedienteId}-${timestamp}${extension}`;
-    
+
     cb(null, filename);
   }
 });

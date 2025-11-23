@@ -1,78 +1,221 @@
-# API Coldwell Banker - Gestión de Expedientes Inmobiliarios
+# 🏢 Coldwell Banker API - Backend
 
-API REST desarrollada con Node.js + TypeScript para la gestión de expedientes inmobiliarios.
+Sistema backend para gestión inmobiliaria con Node.js, Express y TypeScript.
 
 ## 🚀 Tecnologías
 
-- **Node.js** + **TypeScript**
-- **Express** - Framework web
-- **Prisma** - ORM
-- **SQLite** - Base de datos (desarrollo)
-- **JWT** - Autenticación con roles
-- **bcrypt** - Hash de contraseñas
+- **Node.js** v18+
+- **Express** v4.18
+- **TypeScript** v5.9
+- **Prisma ORM** v5.22
+- **PostgreSQL** v14+
+- **JWT** para autenticación
+- **Bcrypt** para hash de contraseñas
+- **Multer** para subida de archivos
+- **Docxtemplater** para generación de documentos Word
 
-## 📦 Instalación
+## 📦 Funcionalidades
 
-```bash
-npm install
+### 🔐 Autenticación y Autorización
+- Login con JWT
+- Sistema de 3 roles: ADMIN, REVISOR, ASESOR
+- Middleware de autenticación
+- Validación de permisos por endpoint
+
+### 👥 Gestión de Usuarios
+- CRUD completo de usuarios
+- Listado con paginación y filtros
+- Validación de emails únicos
+- Hash de contraseñas con bcrypt
+- Soft delete
+
+### 🏠 Gestión de Expedientes/Propiedades
+- CRUD completo
+- Filtros avanzados (estado, asesor, fechas)
+- Cambio de estado (PENDIENTE → APROBADO/RECHAZADO)
+- Observaciones del revisor
+- ASESOR solo ve sus propios expedientes
+- ADMIN/REVISOR ven todos
+
+### 📄 Gestión de Documentos
+- Subida de archivos PDF (hasta 10MB)
+- Almacenamiento organizado por expediente
+- Tipos: ESCRITURA, DNI, API, TGI, PLANOS, MENSURA, TASA, OTRO, PDF_COMPLETO
+- Descarga segura con validación de permisos
+- Prevención de path traversal
+
+### 📝 Gestión de Mandatos
+- Creación de mandatos para expedientes APROBADOS
+- Generación automática de documentos Word (.docx)
+- Plantilla personalizable
+- Descarga segura
+
+## 🔒 Seguridad Implementada
+
+- ✅ CORS configurado con origen específico
+- ✅ Validación de inputs
+- ✅ Prevención de path traversal
+- ✅ Prevención de SQL injection (Prisma ORM)
+- ✅ Manejo global de errores
+- ✅ Hash de contraseñas
+- ✅ JWT para autenticación
+- ✅ Autorización basada en roles
+
+## 📁 Estructura del Proyecto
+
+```
+src/
+├── config/
+│   └── multer.config.ts       # Configuración de subida de archivos
+├── controllers/
+│   ├── auth.controller.ts     # Login y autenticación
+│   ├── usuarios.controller.ts # CRUD de usuarios
+│   ├── expedientes.controller.ts # CRUD de expedientes
+│   ├── documentos.controller.ts  # Subida de documentos
+│   ├── download.controller.ts    # Descarga segura
+│   └── mandatos.controller.ts    # Generación de mandatos
+├── middlewares/
+│   ├── auth.middleware.ts        # Verificación de JWT
+│   └── error-handler.middleware.ts # Manejo de errores
+├── routes/
+│   ├── auth.routes.ts
+│   ├── usuarios.routes.ts
+│   ├── expedientes.routes.ts
+│   ├── documentos.routes.ts
+│   └── mandatos.routes.ts
+├── services/
+│   └── mandato.service.ts     # Lógica de generación de mandatos
+├── prisma.ts                  # Cliente de Prisma
+├── app.ts                     # Configuración de Express
+└── server.ts                  # Inicio del servidor
 ```
 
-## 🔧 Scripts disponibles
+## 🛠️ Instalación
 
 ```bash
-# Modo desarrollo (con hot-reload)
+# Instalar dependencias
+npm install
+
+# Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales
+
+# Ejecutar migraciones de base de datos
+npx prisma migrate dev
+
+# Iniciar servidor en desarrollo
 npm run dev
 
-# Compilar TypeScript
+# Compilar para producción
 npm run build
 
-# Ejecutar producción
+# Iniciar en producción
 npm start
 ```
 
-## 🌐 Endpoints actuales
+## 🌐 Variables de Entorno
 
-- `GET /` - Info de la API
-- `GET /health` - Health check del servidor
+```env
+# Base de datos
+DATABASE_URL="postgresql://usuario:password@localhost:5432/coldwell_banker"
 
-## 📝 Estado del proyecto
+# JWT
+JWT_SECRET="tu_secreto_super_seguro_aqui"
 
-✅ **Paso 1: Inicialización del proyecto**
+# Servidor
+PORT=3000
+NODE_ENV=development
 
-- ✅ Configuración de TypeScript
-- ✅ Instalación de dependencias de producción
-- ✅ Instalación de dependencias de desarrollo
-- ✅ Estructura de carpetas
+# Frontend (para CORS)
+FRONTEND_URL="http://localhost:5173"
 
-✅ **Paso 2: Configuración de Prisma**
+# Logs
+LOG_LEVEL=info
+```
 
-- ✅ `npx prisma init` - Inicialización de Prisma
-- ✅ Configuración de `tsconfig.json` con opciones estrictas
-- ✅ Modo `strict` activado para máxima seguridad de tipos
-- ✅ Servidor Express básico funcionando
-- ✅ Creación del archivo `.env` con variables de entorno
-- ✅ Configuración de SQLite como base de datos (`DATABASE_URL="file:./dev.db"`)
-- ✅ Definición del schema de Prisma con los modelos:
-  - **Usuario** (id, nombre, email, hash, rol, createdAt)
-  - **Expediente** (id, propietarioNombre, asesorId, estado, comentariosRevisor, createdAt, updatedAt)
-  - **Documento** (id, expedienteId, tipo, rutaArchivo, createdAt)
-  - **Mandato** (id, expedienteId, plazoMes, monto, createdAt)
-  - **InformeIA** (id, expedienteId, texto, createdAt)
-- ✅ Enums definidos: `Rol`, `Estado`, `DocTipo`
-- ✅ `npx prisma generate` - Cliente de Prisma generado
-- ✅ `npx prisma migrate dev --name init` - Primera migración creada y aplicada
-- ✅ Base de datos SQLite `dev.db` creada con todas las tablas
-- ✅ Archivo `src/prisma.ts` con instancia única de PrismaClient
+## 📡 Endpoints Principales
 
-⏳ **Próximos pasos:**
+### Autenticación
+- `POST /auth/login` - Login
+- `POST /auth/register` - Registro (solo ADMIN)
 
-- Configuración del servidor Express en `src/app.ts`
-- Sistema de autenticación con JWT
-- Rutas de autenticación (login, registro)
-- Rutas de expedientes
-- Rutas de documentos
-- Middleware de autenticación
-- Validación de datos
+### Usuarios
+- `GET /usuarios` - Listar usuarios
+- `GET /usuarios/:id` - Ver usuario
+- `POST /usuarios` - Crear usuario (ADMIN)
+- `PUT /usuarios/:id` - Editar usuario (ADMIN)
+- `DELETE /usuarios/:id` - Eliminar usuario (ADMIN)
 
----
-Desarrollado paso a paso 🎯
+### Expedientes
+- `GET /expedientes` - Listar expedientes (con filtros)
+- `GET /expedientes/:id` - Ver expediente
+- `POST /expedientes` - Crear expediente
+- `PUT /expedientes/:id` - Editar expediente
+- `PUT /expedientes/:id/estado` - Cambiar estado (ADMIN/REVISOR)
+
+### Documentos
+- `GET /documentos/:expedienteId` - Listar documentos
+- `POST /documentos` - Subir documento PDF
+- `GET /documentos/:id/download` - Descargar documento (seguro)
+- `DELETE /documentos/:id` - Eliminar documento
+
+### Mandatos
+- `POST /expedientes/:id/mandato` - Crear mandato
+- `GET /mandatos/:id/download` - Descargar mandato Word
+
+## 🔑 Roles y Permisos
+
+### ADMIN
+- Acceso total al sistema
+- Crear/editar/eliminar usuarios
+- Ver todos los expedientes
+- Aprobar/rechazar expedientes
+- Ver todos los mandatos
+
+### REVISOR
+- Ver todos los expedientes
+- Aprobar/rechazar expedientes
+- No puede crear usuarios
+
+### ASESOR
+- Ver solo sus propios expedientes
+- Crear expedientes
+- Subir documentos
+- Crear mandatos (solo para expedientes APROBADOS)
+
+## 🧪 Testing
+
+```bash
+# Ejecutar tests (cuando estén implementados)
+npm test
+
+# Coverage
+npm run test:coverage
+```
+
+## 📝 Notas de Desarrollo
+
+### Correcciones de Seguridad Aplicadas
+- **Path Traversal Prevention**: Validación de rutas en subida de archivos
+- **Authorization Bypass Fix**: ASESOR solo puede filtrar por su propio ID
+- **CORS Configuration**: Origen específico configurado
+- **Global Error Handling**: Middleware centralizado
+- **Secure File Download**: Endpoint protegido con validación de permisos
+- **File Path Normalization**: Rutas relativas en lugar de absolutas
+
+### Próximas Mejoras
+- [ ] Tests unitarios y de integración
+- [ ] Documentación Swagger/OpenAPI
+- [ ] Rate limiting
+- [ ] Migración de JWT a cookies httpOnly
+- [ ] Integración con OneDrive para almacenamiento
+- [ ] Logs estructurados (Winston)
+- [ ] Métricas y monitoring
+
+## 👨‍💻 Desarrollador
+
+Matías - Desarrollador Full Stack
+
+## 📄 Licencia
+
+Proyecto privado - Coldwell Banker Argentina

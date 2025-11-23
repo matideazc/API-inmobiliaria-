@@ -39,12 +39,12 @@ router.get('/:expedienteId', autenticar, listarDocumentosPorExpediente);
  * - Si viene multipart/form-data → procesa el archivo
  * - Si viene application/json → pasa directo al controller
  */
-router.post('/', 
-  autenticar, 
+router.post('/',
+  autenticar,
   (req, res, next) => {
     // Solo aplicar multer si el Content-Type es multipart/form-data
     const contentType = req.headers['content-type'] || '';
-    
+
     if (contentType.includes('multipart/form-data')) {
       uploadSinglePDF(req, res, (err) => {
         if (err) {
@@ -70,5 +70,14 @@ router.post('/',
  * Requiere autenticación y rol ADMIN
  */
 router.delete('/:id', autenticar, esAdmin, eliminarDocumento);
+
+import { descargarDocumento } from '../controllers/download.controller';
+// ... (rutas existentes) ...
+/**
+ * GET /documentos/:id/download
+ * Descarga un documento de forma segura validando permisos
+ * Requiere autenticación
+ */
+router.get('/:id/download', autenticar, descargarDocumento);
 
 export default router;

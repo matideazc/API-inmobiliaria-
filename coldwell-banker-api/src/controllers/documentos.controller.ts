@@ -97,7 +97,7 @@ export const crearDocumento = async (req: Request, res: Response) => {
     const esArchivoSubido = req.file !== undefined;
 
     // ========== VALIDACIONES COMUNES ==========
-    
+
     // Soportar tanto 'expedienteId' (legacy) como 'propiedadId' (nuevo)
     const { expedienteId: expedienteIdLegacy, propiedadId, tipo, nombre } = req.body;
     const expedienteId = propiedadId || expedienteIdLegacy;
@@ -132,7 +132,7 @@ export const crearDocumento = async (req: Request, res: Response) => {
     }
 
     // ========== MODO 1: ARCHIVO SUBIDO (multipart/form-data) ==========
-    
+
     if (esArchivoSubido) {
       const archivo = req.file!;
 
@@ -148,8 +148,11 @@ export const crearDocumento = async (req: Request, res: Response) => {
       }
 
       // Usar la ruta del archivo que ya guardó multer
-      // Normalizar las barras invertidas de Windows a barras normales
-      const rutaArchivo = archivo.path.replace(/\\/g, '/');
+      // Convertir a ruta relativa desde la raíz del proyecto
+      // archivo.path viene como ruta absoluta, necesitamos solo "uploads/propiedades/X/archivo.pdf"
+      const rutaAbsoluta = archivo.path.replace(/\\/g, '/');
+      const rutaRelativa = rutaAbsoluta.split('/uploads/')[1]; // Extraer solo "propiedades/X/archivo.pdf"
+      const rutaArchivo = `uploads/${rutaRelativa}`; // Resultado: "uploads/propiedades/X/archivo.pdf"
 
       // Crear el documento en la base de datos
       const nuevoDocumento = await prisma.documento.create({
@@ -184,7 +187,7 @@ export const crearDocumento = async (req: Request, res: Response) => {
     }
 
     // ========== MODO 2: JSON (compatibilidad con código existente) ==========
-    
+
     const { rutaArchivo } = req.body;
 
     // Validación: tipo es obligatorio en modo JSON
@@ -234,7 +237,7 @@ export const crearDocumento = async (req: Request, res: Response) => {
       mensaje: 'Documento creado exitosamente',
       documento: nuevoDocumento
     });
-    
+
   } catch (error) {
     console.error('Error al crear documento:', error);
     res.status(500).json({
