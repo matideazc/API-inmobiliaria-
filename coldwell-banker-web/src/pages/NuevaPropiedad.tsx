@@ -34,11 +34,11 @@ interface Propietario {
 
 const NuevaPropiedad: React.FC = () => {
   const [titulo, setTitulo] = useState('');
-  const [propietarioNombre, setPropietarioNombre] = useState('');
+  const [tipoPropiedad, setTipoPropiedad] = useState('');
   const [direccion, setDireccion] = useState('');
   const [numeroApi, setNumeroApi] = useState('');
-  const [emails, setEmails] = useState('');
-  const [descripcion, setDescripcion] = useState('');
+  const [partidaInmobiliaria, setPartidaInmobiliaria] = useState('');
+  const [localidad, setLocalidad] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -90,8 +90,8 @@ const NuevaPropiedad: React.FC = () => {
       setError('El nombre de la propiedad es obligatorio');
       return;
     }
-    if (!propietarioNombre.trim()) {
-      setError('El nombre del propietario es obligatorio');
+    if (!tipoPropiedad.trim()) {
+      setError('El tipo de propiedad es obligatorio');
       return;
     }
     if (numeroApi.trim() && numeroApi.trim().length !== 16) {
@@ -107,12 +107,21 @@ const NuevaPropiedad: React.FC = () => {
 
       const body: any = {
         titulo: titulo.trim(),
-        propietarioNombre: propietarioNombre.trim(),
+        tipoPropiedad: tipoPropiedad.trim(),
         estado: 'PENDIENTE',
       };
 
-      if (descripcion.trim()) {
-        body.descripcion = descripcion.trim();
+      if (direccion.trim()) {
+        body.direccion = direccion.trim();
+      }
+      if (numeroApi.trim()) {
+        body.api = numeroApi.trim();
+      }
+      if (partidaInmobiliaria.trim()) {
+        body.partidaInmobiliaria = partidaInmobiliaria.trim();
+      }
+      if (localidad.trim()) {
+        body.localidad = localidad.trim();
       }
 
       body.propietarios = propietarios;
@@ -176,24 +185,24 @@ const NuevaPropiedad: React.FC = () => {
             </div>
 
             <div className={styles.inputGroup}>
-              <label htmlFor="propietarioNombre" className={styles.label}>
-                Nombre del propietario <span className={styles.required}>*</span>
+              <label htmlFor="tipoPropiedad" className={styles.label}>
+                Tipo de propiedad <span className={styles.required}>*</span>
               </label>
               <input
-                id="propietarioNombre"
+                id="tipoPropiedad"
                 type="text"
-                value={propietarioNombre}
-                onChange={(e) => setPropietarioNombre(e.target.value)}
+                value={tipoPropiedad}
+                onChange={(e) => setTipoPropiedad(e.target.value)}
                 disabled={loading}
                 className={styles.input}
-                placeholder="Ej: Juan Pérez"
-                maxLength={150}
+                placeholder="Ej: Casa, Departamento, Terreno"
+                maxLength={100}
               />
             </div>
 
             <div className={styles.inputGroup}>
               <label htmlFor="direccion" className={styles.label}>
-                Dirección <span className={styles.optional}>(opcional)</span>
+                Calle (o lotes, número, entre calles) <span className={styles.optional}>(opcional)</span>
               </label>
               <input
                 id="direccion"
@@ -232,36 +241,35 @@ const NuevaPropiedad: React.FC = () => {
             </div>
 
             <div className={styles.inputGroup}>
-              <label htmlFor="emails" className={styles.label}>
-                Email del propietario <span className={styles.optional}>(opcional)</span>
+              <label htmlFor="partidaInmobiliaria" className={styles.label}>
+                Partida Inmobiliaria <span className={styles.optional}>(opcional)</span>
               </label>
               <input
-                id="emails"
-                type="email"
-                value={emails}
-                onChange={(e) => setEmails(e.target.value)}
+                id="partidaInmobiliaria"
+                type="text"
+                value={partidaInmobiliaria}
+                onChange={(e) => setPartidaInmobiliaria(e.target.value)}
                 disabled={loading}
                 className={styles.input}
-                placeholder="Ej: propietario@email.com"
-                maxLength={300}
+                placeholder="Ej: 123456789"
+                maxLength={100}
               />
             </div>
 
             <div className={styles.inputGroup}>
-              <label htmlFor="descripcion" className={styles.label}>
-                Descripción <span className={styles.optional}>(opcional)</span>
+              <label htmlFor="localidad" className={styles.label}>
+                Localidad / Provincia / CP <span className={styles.optional}>(opcional)</span>
               </label>
-              <textarea
-                id="descripcion"
-                value={descripcion}
-                onChange={(e) => setDescripcion(e.target.value)}
+              <input
+                id="localidad"
+                type="text"
+                value={localidad}
+                onChange={(e) => setLocalidad(e.target.value)}
                 disabled={loading}
-                className={styles.textarea}
-                placeholder="Ej: Documentación que envió el cliente"
-                rows={4}
-                maxLength={500}
+                className={styles.input}
+                placeholder="Ej: Buenos Aires, CABA, CP 1425"
+                maxLength={200}
               />
-              <span className={styles.charCount}>{descripcion.length}/500</span>
             </div>
 
             {/* ========== DIVISOR ========== */}
