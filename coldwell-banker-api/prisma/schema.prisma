@@ -30,23 +30,27 @@ enum Rol {
 
 // ===== Expedientes =====
 model Expediente {
-  id                Int        @id @default(autoincrement())
-  titulo            String     // título o referencia del expediente (nombre de la propiedad)
-  descripcion       String?    // descripción opcional
-  propietarioNombre String
-  direccion         String?    // dirección de la propiedad
-  api               String?    // número de API de la propiedad
-  emails            String?    // emails relacionados con la propiedad (separados por coma)
-  asesor            Usuario    @relation("AsesorExpedientes", fields: [asesorId], references: [id])
-  asesorId          Int
-  estado            Estado     @default(PENDIENTE)
-  comentariosRevisor String?
-  observaciones     String?    // observaciones del revisor al cambiar el estado
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
-  documentos        Documento[]
-  mandato           Mandato?
-  informe           InformeIA?
+  id                   Int        @id @default(autoincrement())
+  titulo               String     // título o referencia del expediente (nombre de la propiedad)
+  tipoPropiedad        String?    // tipo de propiedad (casa, departamento, terreno, etc.)
+  descripcion          String?    // descripción opcional
+  propietarioNombre    String?    // DEPRECATED: ahora se usa el array propietarios
+  direccion            String?    // dirección de la propiedad
+  api                  String?    // número de API de la propiedad
+  partidaInmobiliaria  String?    // número de partida inmobiliaria
+  localidad            String?    // localidad / provincia / CP
+  emails               String?    // emails relacionados con la propiedad (separados por coma)
+  propietarios         String?    // JSON array de objetos propietario (nombreCompleto, dni, fechaNacimiento, etc.)
+  asesor               Usuario    @relation("AsesorExpedientes", fields: [asesorId], references: [id])
+  asesorId             Int
+  estado               Estado     @default(PENDIENTE)
+  comentariosRevisor   String?
+  observaciones        String?    // observaciones del revisor al cambiar el estado
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+  documentos           Documento[]
+  mandato              Mandato?
+  informe              InformeIA?
 }
 
 enum Estado {

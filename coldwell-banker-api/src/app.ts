@@ -2,6 +2,8 @@ import 'dotenv/config';
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import path from 'path';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import usuariosRoutes from './routes/usuarios.routes';
 import authRoutes from './routes/auth.routes';
 import expedientesRoutes from './routes/expedientes.routes';
@@ -9,6 +11,30 @@ import documentosRoutes from './routes/documentos.routes';
 import mandatosRoutes from './routes/mandatos.routes';
 
 const app: Application = express();
+
+// SEGURIDAD: Headers HTTP con Helmet.js
+app.use(helmet({
+  contentSecurityPolicy: false, // Desactivado para permitir carga de assets
+  crossOriginEmbedderPolicy: false, // Compatibilidad con uploads
+}));
+
+// SEGURIDAD: Rate limiting global (anti-DoS)
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // máximo 100 requests por IP
+  message: 'Demasiadas solicitudes, intente más tarde',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(generalLimiter);
+
+// SEGURIDAD: Rate limiting estricto para login (anti-brute force)
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 5, // máximo 5 intentos de login
+  skipSuccessfulRequests: true,
+  message: 'Demasiados intentos de login, intente en 15 minutos',
+});
 
 // Middlewares
 // SEGURIDAD: Configurar CORS con origen específico
@@ -31,6 +57,7 @@ app.get('/health', (req: Request, res: Response) => {
 
 // Rutas de la API
 app.use('/usuarios', usuariosRoutes);
+app.use('/auth/login', loginLimiter); // Rate limit específico para login
 app.use('/auth', authRoutes);
 app.use('/expedientes', expedientesRoutes);
 app.use('/propiedades', expedientesRoutes); // Alias para compatibilidad con frontend mobile

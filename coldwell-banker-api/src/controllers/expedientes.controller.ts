@@ -307,7 +307,18 @@ export const obtenerExpediente = async (req: Request, res: Response) => {
  */
 export const crearExpediente = async (req: Request, res: Response) => {
     try {
-        const { titulo, descripcion, propietarioNombre, direccion, api, emails } = req.body;
+        const { 
+            titulo, 
+            tipoPropiedad,
+            descripcion, 
+            propietarioNombre, 
+            direccion, 
+            api, 
+            partidaInmobiliaria,
+            localidad,
+            emails,
+            propietarios 
+        } = req.body;
 
         // Validación: el título es obligatorio
         if (!titulo || titulo.trim() === '') {
@@ -317,10 +328,10 @@ export const crearExpediente = async (req: Request, res: Response) => {
             return;
         }
 
-        // Validación: propietarioNombre es obligatorio
-        if (!propietarioNombre || propietarioNombre.trim() === '') {
+        // Validación: tipoPropiedad es obligatorio (nuevo campo)
+        if (!tipoPropiedad || tipoPropiedad.trim() === '') {
             res.status(400).json({
-                error: 'El campo "propietarioNombre" es obligatorio'
+                error: 'El campo "tipoPropiedad" es obligatorio'
             });
             return;
         }
@@ -335,16 +346,35 @@ export const crearExpediente = async (req: Request, res: Response) => {
             return;
         }
 
-        // Crear el expediente
+        // Auto-poblar propietarioNombre desde el array de propietarios
+        let propietarioNombreAuto = propietarioNombre?.trim() || null;
+        
+        if (propietarios && Array.isArray(propietarios) && propietarios.length > 0) {
+            // Extraer nombres de todos los propietarios
+            const nombres = propietarios
+                .map((p: any) => p.nombreCompleto)
+                .filter((nombre: string) => nombre && nombre.trim())
+                .join(', ');
+            
+            if (nombres) {
+                propietarioNombreAuto = nombres;
+            }
+        }
+
+        // Crear el expediente con los nuevos campos
         // @ts-ignore - Los tipos de Prisma se actualizan al reiniciar VS Code
         const nuevoExpediente = await prisma.expediente.create({
             data: {
                 titulo: titulo.trim(),
+                tipoPropiedad: tipoPropiedad?.trim() || null,
                 descripcion: descripcion?.trim() || null,
-                propietarioNombre: propietarioNombre.trim(),
+                propietarioNombre: propietarioNombreAuto, // Auto-populado desde array
                 direccion: direccion && direccion.trim() ? direccion.trim() : null,
                 api: api && api.trim() ? api.trim() : null,
+                partidaInmobiliaria: partidaInmobiliaria && partidaInmobiliaria.trim() ? partidaInmobiliaria.trim() : null,
+                localidad: localidad && localidad.trim() ? localidad.trim() : null,
                 emails: emails && emails.trim() ? emails.trim() : null,
+                propietarios: propietarios ? JSON.stringify(propietarios) : null, // Serializar como JSON string
                 asesorId: usuarioId
                 // estado por defecto es PENDIENTE (definido en el schema)
             },
