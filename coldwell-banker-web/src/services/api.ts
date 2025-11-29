@@ -65,15 +65,15 @@ export const fetchExpedientes = async (params?: FetchExpedientesParams) => {
 // Helper para crear mandato
 export const crearMandato = (
   expedienteId: number,
-  data: { plazoDias: number; monto: number; observaciones?: string }
+  data: { plazoDias: number; monto: number; moneda?: string; observaciones?: string }
 ) => api.post(`/expedientes/${expedienteId}/mandato`, data);
 
-// Helper para descargar documento Word del mandato
+// Helper para descargar documento Word del mandato (con datos autocompletados)
 export const descargarMandatoWord = async (
   expedienteId: number,
   tituloExpediente: string
 ): Promise<void> => {
-  const response = await api.get(`/expedientes/${expedienteId}/mandato/word`, {
+  const response = await api.get(`/propiedades/${expedienteId}/mandato/word-completo`, {
     responseType: 'blob',
   });
 

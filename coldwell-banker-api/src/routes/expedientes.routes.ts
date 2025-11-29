@@ -5,6 +5,7 @@ import {
   crearExpediente, 
   cambiarEstadoExpediente 
 } from '../controllers/expedientes.controller';
+import { generarMandatoCompleto } from '../controllers/mandatos-completo.controller';
 import { autenticar, esAdmin } from '../middlewares/auth.middleware';
 
 const router = Router();
@@ -47,5 +48,12 @@ router.post('/', autenticar, crearExpediente);
  */
 router.put('/:id/estado', autenticar, esAdmin, cambiarEstadoExpediente);
 router.patch('/:id/estado', autenticar, esAdmin, cambiarEstadoExpediente);
+
+/**
+ * GET /propiedades/:id/mandato/word-completo
+ * Genera mandato Word con datos autocompletados
+ * Requiere autenticación
+ */
+router.get('/:id/mandato/word-completo', autenticar, generarMandatoCompleto);
 
 export default router;
