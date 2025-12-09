@@ -4,10 +4,9 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Para empezar en local es más fácil sqlite.
-// Cuando pases a producción cambiás a postgresql y cambiás la DATABASE_URL.
+// Base de datos PostgreSQL para producción en Railway
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
