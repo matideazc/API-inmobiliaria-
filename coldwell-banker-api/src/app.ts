@@ -50,6 +50,22 @@ app.use(express.json());
 // Esto permite acceder a: http://localhost:3000/uploads/propiedades/{id}/archivo.pdf
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
+// Ruta raíz - Bienvenida
+app.get('/', (req: Request, res: Response) => {
+  res.json({
+    message: '🏠 API Inmobiliaria Coldwell Banker',
+    status: 'online',
+    version: '1.0.0',
+    endpoints: {
+      auth: '/auth/login, /auth/register',
+      expedientes: '/expedientes',
+      documentos: '/documentos',
+      mandatos: '/expedientes/:id/mandato',
+      health: '/health'
+    }
+  });
+});
+
 // Ruta de health check
 app.get('/health', (req: Request, res: Response) => {
   res.json({ ok: true });
