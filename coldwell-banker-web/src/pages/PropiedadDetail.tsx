@@ -29,11 +29,30 @@ interface Mandato {
   createdAt: string;
 }
 
+// Interfaz para los propietarios (parseado del JSON)
+interface PropietarioDetalle {
+  nombreCompleto: string;
+  dni: string;
+  cuitCuil?: string; // Puede venir como cuit, cuil o nada
+  email: string;
+  celular: string;
+  fechaNacimiento?: string;
+  estadoCivil?: string;
+  domicilioReal?: string;
+}
+
 interface Propiedad {
   id: number;
   titulo: string;
   descripcion: string | null;
   propietarioNombre: string;
+  // Campos nuevos
+  direccion?: string | null;
+  localidad?: string | null;
+  api?: string | null;
+  partidaInmobiliaria?: string | null;
+  propietarios?: string | null; // JSON string
+  
   estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
   observaciones: string | null;
   createdAt: string;
@@ -52,6 +71,10 @@ const PropiedadDetail = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [downloadError, setDownloadError] = useState('');
   const [downloadingWord, setDownloadingWord] = useState(false);
+  
+  // Estado para la lista de propietarios parseada
+  const [propietariosList, setPropietariosList] = useState<PropietarioDetalle[]>([]);
+
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -71,6 +94,21 @@ const PropiedadDetail = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  // Efecto para parsear los propietarios cuando carga la propiedad
+  useEffect(() => {
+    if (propiedad?.propietarios) {
+      try {
+        const parsed = JSON.parse(propiedad.propietarios);
+        if (Array.isArray(parsed)) {
+          setPropietariosList(parsed);
+        }
+      } catch (e) {
+        console.error('Error al parsear propietarios:', e);
+        setPropietariosList([]);
+      }
+    }
+  }, [propiedad]);
 
   // Efecto separado para manejar el refetch después de crear mandato
   useEffect(() => {
@@ -237,6 +275,62 @@ const PropiedadDetail = () => {
           <p className={styles.ownerInfo}>
             Propietario/s: <strong>{propiedad.propietarioNombre}</strong>
           </p>
+
+          {/* === NUEVA SECCIÓN: Información Detallada === */}
+          <div className={styles.section} style={{ marginTop: '2rem', backgroundColor: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
+            <h3 style={{ borderBottom: '1px solid #334155', paddingBottom: '0.5rem', marginBottom: '1rem', color: '#94a3b8' }}>
+              📍 Información de la Propiedad
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+              <div>
+                <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Dirección:</span>
+                <div style={{ fontWeight: 'bold', color: 'white' }}>{propiedad.direccion || '-'}</div>
+              </div>
+              <div>
+                <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Localidad:</span>
+                <div style={{ fontWeight: 'bold', color: 'white' }}>{propiedad.localidad || '-'}</div>
+              </div>
+              <div>
+                <span style={{ color: '#64748b', fontSize: '0.9rem' }}>API:</span>
+                <div style={{ fontWeight: 'bold', color: 'white' }}>{propiedad.api || '-'}</div>
+              </div>
+              <div>
+                <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Partida Inmobiliaria:</span>
+                <div style={{ fontWeight: 'bold', color: 'white' }}>{propiedad.partidaInmobiliaria || '-'}</div>
+              </div>
+            </div>
+
+            <h3 style={{ borderBottom: '1px solid #334155', paddingBottom: '0.5rem', marginBottom: '1rem', color: '#94a3b8' }}>
+              👥 Datos de Propietarios
+            </h3>
+            {propietariosList.length > 0 ? (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem' }}>
+                  <thead>
+                    <tr style={{ textAlign: 'left', borderBottom: '2px solid #334155' }}>
+                      <th style={{ padding: '0.75rem', color: '#94a3b8' }}>Nombre</th>
+                      <th style={{ padding: '0.75rem', color: '#94a3b8' }}>DNI</th>
+                      <th style={{ padding: '0.75rem', color: '#94a3b8' }}>Celular</th>
+                      <th style={{ padding: '0.75rem', color: '#94a3b8' }}>Email</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {propietariosList.map((p, index) => (
+                      <tr key={index} style={{ borderBottom: '1px solid #1e293b', backgroundColor: index % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent' }}>
+                        <td style={{ padding: '0.75rem', fontWeight: '500' }}>{p.nombreCompleto}</td>
+                        <td style={{ padding: '0.75rem' }}>{p.dni}</td>
+                        <td style={{ padding: '0.75rem' }}>{p.celular}</td>
+                        <td style={{ padding: '0.75rem' }}>{p.email}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p style={{ color: '#64748b', fontStyle: 'italic' }}>No hay información detallada de propietarios.</p>
+            )}
+          </div>
+          {/* === FIN NUEVA SECCIÓN === */}
 
           {/* Mensaje informativo según el estado */}
           {propiedad.estado === 'PENDIENTE' && !canChangeStatus && (
