@@ -161,6 +161,11 @@ const PropiedadDetail = () => {
     try {
       await descargarMandatoWord(Number(id), propiedad.titulo);
     } catch (err: any) {
+      console.error('❌ Error descarga mandato:', err);
+      if (err.response?.data) {
+          console.error('📄 Detalles del error de backend:', err.response.data);
+      }
+      
       const errorMsg = err.response?.status === 403
         ? 'No tenés permisos para descargar este mandato'
         : err.response?.status === 404
