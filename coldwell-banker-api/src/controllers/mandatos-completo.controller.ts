@@ -4,6 +4,9 @@ import Docxtemplater from 'docxtemplater';
 import PizZip from 'pizzip';
 import fs from 'fs';
 import path from 'path';
+// Fix para n2words (manejo de importación CJS/ESM)
+import n2wordsLib from 'n2words';
+const n2words = (n2wordsLib as any).default || n2wordsLib;
 
 /**
  * GET /propiedades/:id/mandato/word-completo
@@ -84,9 +87,23 @@ export const generarMandatoCompleto = async (req: Request, res: Response) => {
       'mandato_venta_persona_fisica.docx'
     );
 
+    console.log('📂 Directorio actual (__dirname):', __dirname);
+    console.log('📂 Ruta plantilla calculada:', templatePath);
+    console.log('📂 ¿Existe el archivo?:', fs.existsSync(templatePath));
+
     if (!fs.existsSync(templatePath)) {
+      console.error('❌ ERROR CRÍTICO: No se encuentra el archivo de plantilla en:', templatePath);
+      // Intentar listar el directorio padre para ver qué hay
+      try {
+        const parentDir = path.dirname(templatePath);
+        console.log(`📂 Contenido de ${parentDir}:`, fs.readdirSync(parentDir));
+      } catch (e) {
+        console.error('No se pudo listar directorio de plantillas');
+      }
+
       res.status(500).json({
-        error: 'Plantilla de mandato no encontrada'
+        error: 'Plantilla de mandato no encontrada en el servidor',
+        path: templatePath
       });
       return;
     }
@@ -99,6 +116,67 @@ export const generarMandatoCompleto = async (req: Request, res: Response) => {
       const d = new Date(date);
       return d.toLocaleDateString('es-AR');
     };
+    
+    // Helper para convertir números a letras (simplificado para días)
+    function numeroALetrasHelper(num: number): string {
+      try {
+        console.log('🔢 Intentando convertir número:', num);
+        // Intentar usar n2words de varias formas posibles
+        if (typeof n2words === 'function') return n2words(num, { lang: 'es' });
+        if (typeof n2wordsLib === 'function') return (n2wordsLib as any)(num, { lang: 'es' });
+        // @ts-ignore
+        if (n2wordsLib?.default && typeof n2wordsLib.default === 'function') return n2wordsLib.default(num, { lang: 'es' });
+        
+        console.warn('⚠️ n2words no es una función:', typeof n2words);
+        return num.toString();
+      } catch (error) {
+        console.error('❌ Error en numeroALetrasHelper:', error);
+        return num.toString();
+      }
+    }
+
+    // Helper para formatear monto en letras y números
+    function formatearMontoCompleto(monto: number, moneda: string): { montoCompleto: string, montoLetras: string, monedaNombre: string } {
+      const esDolares = moneda === 'USD';
+      const monedaNombre = esDolares ? 'DÓLARES ESTADOUNIDENSES' : 'PESOS ARGENTINOS';
+      const monedaSimbolo = esDolares ? 'USD' : 'ARS';
+      
+      // Parte entera y decimal
+      const parteEntera = Math.floor(monto);
+      const parteDecimal = Math.round((monto - parteEntera) * 100);
+      
+      let letras = '';
+      try {
+        letras = numeroALetrasHelper(parteEntera);
+        
+        // Capitalizar primera letra
+        if (letras && letras.length > 0) {
+            letras = letras.charAt(0).toUpperCase() + letras.slice(1);
+        }
+        
+        // Agregar decimales si existen
+        if (parteDecimal > 0) {
+            letras += ` con ${parteDecimal}/100`;
+        }
+      } catch (err) {
+        console.error('❌ Error al convertir monto a letras:', err);
+        letras = monto.toString();
+      }
+      
+      const numeroFormateado = monto.toLocaleString('es-AR', {
+        minimumFractionDigits: parteDecimal > 0 ? 2 : 0,
+        maximumFractionDigits: 2
+      });
+
+      // Formato final: "DÓLARES ESTADOUNIDENSES DOSCIENTOS MIL (USD 200.000)"
+      const montoCompleto = `${monedaNombre} ${letras.toUpperCase()} (${monedaSimbolo} ${numeroFormateado})`;
+      
+      return {
+        montoCompleto,
+        montoLetras: letras.toUpperCase(),
+        monedaNombre
+      };
+    }
 
     // Parsear propietarios desde el JSON string
     let propietariosList: any[] = [];
@@ -115,6 +193,34 @@ export const generarMandatoCompleto = async (req: Request, res: Response) => {
     const propietario2 = propietariosList[1] || null;
     const propietario3 = propietariosList[2] || null;
 
+    // Lógica para formatear el plazo
+    const dias = expediente.mandato.plazoDias || 0;
+    let plazoTexto = '';
+    let plazoMesesTexto = '';
+
+    // Formato Días: "noventa (90) días"
+    if (dias > 0) {
+      plazoTexto = `${numeroALetrasHelper(dias)} (${dias}) días`;
+    }
+
+    // Formato Meses (si es exacto): "tres (3) meses"
+    if (dias > 0 && dias % 30 === 0) {
+      try {
+        const meses = dias / 30;
+        const mesesLetras = numeroALetrasHelper(meses);
+        const palabraMes = meses === 1 ? 'mes' : 'meses';
+        const letrasFormat = mesesLetras === 'uno' ? 'un' : mesesLetras; 
+        plazoMesesTexto = `${letrasFormat} (${meses}) ${palabraMes}`;
+      } catch (err) {
+        console.error('Error en conversion meses:', err);
+      }
+    }
+
+    // Lógica de Monto
+    const montoValor = expediente.mandato.monto || 0;
+    const monedaTipo = expediente.mandato.moneda || 'ARS';
+    const { montoCompleto, montoLetras, monedaNombre } = formatearMontoCompleto(montoValor, monedaTipo);
+
     const data = {
       // Datos de la propiedad
       tipoPropiedad: expediente.tipoPropiedad || '',
@@ -126,6 +232,15 @@ export const generarMandatoCompleto = async (req: Request, res: Response) => {
       monto: expediente.mandato.monto?.toString() || '',
       moneda: expediente.mandato.moneda || 'ARS',
       plazoDias: expediente.mandato.plazoDias?.toString() || '',
+      
+      // VARIABLES INTELIGENTES
+      plazo: plazoTexto,           
+      plazo_meses: plazoMesesTexto, 
+      plazo_inteligente: plazoMesesTexto || plazoTexto,
+      
+      montoCompleto: montoCompleto,
+      montoLetras: montoLetras,
+      monedaNombre: monedaNombre,
       
       // Propietario 1
       propietario1Nombre: propietario1?.nombreCompleto || propietario1?.nombre || '',
@@ -164,7 +279,9 @@ export const generarMandatoCompleto = async (req: Request, res: Response) => {
     console.log('📄 Generando mandato con datos:', {
       expedienteId,
       propietarios: propietariosList.length,
-      tipoPropiedad: data.tipoPropiedad
+      tipoPropiedad: data.tipoPropiedad,
+      plazo: data.plazo_inteligente,
+      monto: data.montoCompleto
     });
 
     // Generar documento
