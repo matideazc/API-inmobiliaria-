@@ -1,5 +1,6 @@
+```typescript
 // src/context/AuthContext.tsx
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import { setAuthClearCallback } from '../services/api';
 import api from '../services/api';
 
@@ -22,16 +23,21 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true); // Iniciamos en true mientras cargamos
+  const hasCheckedAuth = useRef(false); // Prevenir múltiples llamadas
 
   const clearAuth = () => {
     setUser(null);
     // No necesitamos limpiar localStorage porque usamos cookies
   };
 
-  // Verificar si hay sesión válida al montar el componente
+  // Verificar si hay sesión válida al montar el componente (UNA SOLA VEZ)
   useEffect(() => {
+    // Si ya checamos, no volver a hacerlo
+    if (hasCheckedAuth.current) return;
+    
     const checkAuth = async () => {
       try {
+        hasCheckedAuth.current = true; // Marcar como checado ANTES de la llamada
         // Llamar al endpoint /auth/me que valida la cookie
         const response = await api.get('/auth/me');
         if (response.data?.usuario) {
@@ -50,7 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Configurar el callback de clearAuth en el interceptor de axios
     setAuthClearCallback(clearAuth);
-  }, []);
+  }, []); // ← DEPENDENCIAS VACÍAS: solo ejecutar una vez al montar
 
   const setAuth = (newUser: AuthUser) => {
     setUser(newUser);
