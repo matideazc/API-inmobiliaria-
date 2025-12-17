@@ -1,6 +1,7 @@
 // src/context/AuthContext.tsx
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { setAuthClearCallback } from '../services/api';
+import api from '../services/api';
 
 export interface AuthUser {
   id: number;
@@ -11,8 +12,8 @@ export interface AuthUser {
 
 interface AuthContextType {
   user: AuthUser | null;
-  token: string | null;
-  setAuth: (token: string, user: AuthUser) => void;
+  loading: boolean; // Nuevo: indica si estamos verificando la sesión
+  setAuth: (user: AuthUser) => void;
   clearAuth: () => void;
 }
 
@@ -20,44 +21,44 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true); // Iniciamos en true mientras cargamos
 
   const clearAuth = () => {
-    setToken(null);
     setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    // No necesitamos limpiar localStorage porque usamos cookies
   };
 
-  // Cargar auth desde localStorage al montar
+  // Verificar si hay sesión válida al montar el componente
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-
-    if (storedToken && storedUser) {
+    const checkAuth = async () => {
       try {
-        const parsedUser = JSON.parse(storedUser);
-        setToken(storedToken);
-        setUser(parsedUser);
-      } catch (err) {
-        // Si hay error al parsear, limpiar todo
-        clearAuth();
+        // Llamar al endpoint /auth/me que valida la cookie
+        const response = await api.get('/auth/me');
+        if (response.data?.usuario) {
+          setUser(response.data.usuario);
+        }
+      } catch (error) {
+        // Si falla (401 o cualquier otro), no hay sesión válida
+        console.log('No hay sesión activa');
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
+
+    checkAuth();
 
     // Configurar el callback de clearAuth en el interceptor de axios
     setAuthClearCallback(clearAuth);
   }, []);
 
-  const setAuth = (newToken: string, newUser: AuthUser) => {
-    setToken(newToken);
+  const setAuth = (newUser: AuthUser) => {
     setUser(newUser);
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify(newUser));
+    // No guardamos en localStorage, la cookie se maneja automáticamente
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, setAuth, clearAuth }}>
+    <AuthContext.Provider value={{ user, loading, setAuth, clearAuth }}>
       {children}
     </AuthContext.Provider>
   );

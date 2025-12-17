@@ -6,6 +6,7 @@ import PropiedadDetail from './pages/PropiedadDetail';
 import UploadDocument from './pages/UploadDocument';
 import NuevaPropiedad from './pages/NuevaPropiedad';
 import MandatoForm from './pages/MandatoForm';
+import GestionUsuarios from './pages/GestionUsuarios';
 import ProtectedRoute from './routes/ProtectedRoute';
 import AppShell from './layout/AppShell';
 
@@ -25,6 +26,7 @@ function App() {
             <Route path="/propiedades/:id" element={<PropiedadDetail />} />
             <Route path="/propiedades/:id/mandato" element={<MandatoForm />} />
             <Route path="/propiedades/:id/upload" element={<UploadDocument />} />
+            <Route path="/usuarios" element={<GestionUsuarios />} />
           </Route>
 
           {/* 404 - Not Found */}

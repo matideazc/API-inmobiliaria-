@@ -1,9 +1,9 @@
 // src/layout/Topbar.tsx
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import Button from '../ui/Button';
-import Badge from '../ui/Badge';
 import styles from './Topbar.module.css';
+import orbeLogo from '../assets/images/orbe_sin_fondo_blanco.png';
+import logoutIcon from '../assets/icons/cerrar-sesion.png';
 
 export default function Topbar() {
   const navigate = useNavigate();
@@ -14,31 +14,39 @@ export default function Topbar() {
     navigate('/login');
   };
 
-  const getBadgeVariant = (rol: string): 'success' | 'danger' | 'warning' => {
-    switch (rol) {
-      case 'ADMIN':
-        return 'danger';
-      case 'REVISOR':
-        return 'warning';
-      default:
-        return 'success';
-    }
-  };
-
   return (
     <header className={styles.topbar}>
-      {/* Logo / Nombre del sistema */}
+      {/* Logo Orbe */}
       <div className={styles.brand} onClick={() => navigate('/')}>
-        <img src="/cb-logo.png" alt="Coldwell Banker" className={styles.brandLogo} />
-        <span className={styles.brandName}>CB Inmobiliaria</span>
+        <img src={orbeLogo} alt="Orbe" className={styles.brandLogo} />
       </div>
+
+      {/* Menú de navegación */}
+      <nav className={styles.nav}>
+        {/* Solo ADMIN y REVISOR ven el botón de Propiedades */}
+        {(user?.rol === 'ADMIN' || user?.rol === 'REVISOR') && (
+          <button 
+            onClick={() => navigate('/propiedades')}
+            className={styles.navLink}
+          >
+            Propiedades
+          </button>
+        )}
+        {user?.rol === 'ADMIN' && (
+          <button 
+            onClick={() => navigate('/usuarios')}
+            className={styles.navLink}
+          >
+            Usuarios
+          </button>
+        )}
+      </nav>
 
       {/* Spacer */}
       <div className={styles.spacer} />
 
-      {/* Acciones principales */}
+      {/* User info + Logout */}
       <div className={styles.actions}>
-        {/* Usuario */}
         <div className={styles.userMenu}>
           <div className={styles.userInfo}>
             <div className={styles.avatar}>
@@ -46,21 +54,18 @@ export default function Topbar() {
             </div>
             <div className={styles.userDetails}>
               <span className={styles.userName}>{user?.nombre || 'Usuario'}</span>
-              {user?.rol && (
-                <Badge variant={getBadgeVariant(user.rol)}>{user.rol}</Badge>
-              )}
+              <span className={styles.userRole}>{user?.rol || 'ASESOR'}</span>
             </div>
           </div>
 
-          {/* Botón de logout */}
-          <Button 
-            variant="ghost" 
-            size="sm"
+          {/* Logout Icon Button */}
+          <button 
             onClick={handleLogout}
+            className={styles.logoutBtn}
             title="Cerrar sesión"
           >
-            🚪 Salir
-          </Button>
+            <img src={logoutIcon} alt="Logout" className={styles.logoutIcon} />
+          </button>
         </div>
       </div>
     </header>

@@ -29,11 +29,11 @@ interface Mandato {
   createdAt: string;
 }
 
-// Interfaz para los propietarios (parseado del JSON)
 interface PropietarioDetalle {
   nombreCompleto: string;
   dni: string;
-  cuitCuil?: string; // Puede venir como cuit, cuil o nada
+  cuitCuil?: string;
+  cuil?: string;
   email: string;
   celular: string;
   fechaNacimiento?: string;
@@ -46,13 +46,11 @@ interface Propiedad {
   titulo: string;
   descripcion: string | null;
   propietarioNombre: string;
-  // Campos nuevos
   direccion?: string | null;
   localidad?: string | null;
   api?: string | null;
   partidaInmobiliaria?: string | null;
-  propietarios?: string | null; // JSON string
-  
+  propietarios?: string | null;
   estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
   observaciones: string | null;
   createdAt: string;
@@ -67,12 +65,11 @@ const PropiedadDetail = () => {
   const [propiedad, setPropiedad] = useState<Propiedad | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showModal, setShowModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [downloadError, setDownloadError] = useState('');
   const [downloadingWord, setDownloadingWord] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   
-  // Estado para la lista de propietarios parseada
   const [propietariosList, setPropietariosList] = useState<PropietarioDetalle[]>([]);
 
   const navigate = useNavigate();
@@ -81,7 +78,6 @@ const PropiedadDetail = () => {
   // Verificar si el usuario puede cambiar el estado
   const canChangeStatus = user?.rol === 'ADMIN' || user?.rol === 'REVISOR';
 
-  // Verificar si el usuario puede descargar el mandato
   const canDownloadMandato = 
     propiedad?.mandato &&
     (user?.rol === 'ADMIN' || 
@@ -95,7 +91,6 @@ const PropiedadDetail = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // Efecto para parsear los propietarios cuando carga la propiedad
   useEffect(() => {
     if (propiedad?.propietarios) {
       try {
@@ -110,31 +105,17 @@ const PropiedadDetail = () => {
     }
   }, [propiedad]);
 
-  // Efecto separado para manejar el refetch después de crear mandato
   useEffect(() => {
     if (location.state?.refetch) {
-      // Recargar datos de la propiedad
       if (id) {
         fetchPropiedad();
       }
       
-      // Mostrar mensaje de éxito
       if (location.state?.message) {
         setSuccessMessage(location.state.message);
         setTimeout(() => setSuccessMessage(''), 3000);
       }
       
-      // Hacer scroll a la sección de mandato si se indica
-      if (location.state?.scrollToMandato) {
-        setTimeout(() => {
-          const mandatoSection = document.querySelector('[data-section="mandato"]');
-          if (mandatoSection) {
-            mandatoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }, 500);
-      }
-      
-      // Limpiar el estado para que no se vuelva a ejecutar
       navigate(location.pathname, { replace: true, state: {} });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -161,11 +142,6 @@ const PropiedadDetail = () => {
     try {
       await descargarMandatoWord(Number(id), propiedad.titulo);
     } catch (err: any) {
-      console.error('❌ Error descarga mandato:', err);
-      if (err.response?.data) {
-          console.error('📄 Detalles del error de backend:', err.response.data);
-      }
-      
       const errorMsg = err.response?.status === 403
         ? 'No tenés permisos para descargar este mandato'
         : err.response?.status === 404
@@ -177,6 +153,22 @@ const PropiedadDetail = () => {
     } finally {
       setDownloadingWord(false);
     }
+  };
+
+  const handleStatusChange = (nuevoEstado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO', observaciones: string | null) => {
+    // Actualizar el estado local de la propiedad sin recargar toda la página
+    setPropiedad(prev => prev ? {
+      ...prev,
+      estado: nuevoEstado,
+      observaciones
+    } : null);
+    
+    // Mostrar mensaje de éxito
+    setSuccessMessage('✅ Estado actualizado correctamente');
+    setShowModal(false);
+    
+    // Ocultar mensaje después de 3 segundos
+    setTimeout(() => setSuccessMessage(''), 3000);
   };
 
   if (loading) {
@@ -209,46 +201,43 @@ const PropiedadDetail = () => {
     );
   }
 
-  const handleStatusChange = (nuevoEstado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO', observaciones: string | null) => {
-    // Actualizar el estado local de la propiedad sin recargar toda la página
-    setPropiedad(prev => prev ? {
-      ...prev,
-      estado: nuevoEstado,
-      observaciones
-    } : null);
-    
-    // Mostrar mensaje de éxito
-    setSuccessMessage('✅ Estado actualizado correctamente');
-    setShowModal(false);
-    
-    // Ocultar mensaje después de 3 segundos
-    setTimeout(() => setSuccessMessage(''), 3000);
-  };
-
   return (
     <div className={styles.container}>
       <div className={styles.wrapper}>
-        {/* Mensaje de éxito */}
+        {/* Success/Error Messages */}
         {successMessage && (
           <div className={styles.successBanner}>
-            <div className={styles.successContent}>
-              <span className={styles.successIcon}>✅</span>
-              <span className={styles.successText}>{successMessage}</span>
-            </div>
+            {successMessage}
           </div>
         )}
 
-        {/* Mensaje de error de descarga */}
         {downloadError && (
           <div className={styles.errorBanner}>
             ❌ {downloadError}
           </div>
         )}
 
-        <div className={styles.headerActions}>
-          <button onClick={() => navigate('/propiedades')} className={styles.backButton}>
-            ← Volver
-          </button>
+        {/* Back Button */}
+        <button onClick={() => navigate('/propiedades')} className={styles.backButton}>
+          ← Volver
+        </button>
+
+        <div className={styles.card}>
+          {/* Header: Título + Estado + Admin Actions */}
+          <div className={styles.titleSection}>
+            <h1>{propiedad.titulo}</h1>
+            <div className={styles.headerRight}>
+              <span className={`${styles.statusBadge} ${styles[`status${propiedad.estado}`]}`}>
+                {propiedad.estado}
+              </span>
+            </div>
+          </div>
+          
+          <p className={styles.ownerInfo}>
+            Propietario/s: <strong>{propiedad.propietarioNombre}</strong>
+          </p>
+
+          {/* Admin Actions - Aprobar/Rechazar */}
           {canChangeStatus && (
             <div className={styles.adminActions}>
               <button 
@@ -265,232 +254,179 @@ const PropiedadDetail = () => {
               </button>
             </div>
           )}
-        </div>
 
-        <div className={styles.card}>
-          <div className={styles.titleSection}>
-            <h1>{propiedad.titulo}</h1>
-            <span className={`${styles.statusBadge} ${styles[`status${propiedad.estado}`]}`}>
-              {propiedad.estado === 'PENDIENTE' && '⏳ PENDIENTE'}
-              {propiedad.estado === 'APROBADO' && '✅ APROBADO'}
-              {propiedad.estado === 'RECHAZADO' && '❌ RECHAZADO'}
-            </span>
-          </div>
-          
-          <p className={styles.ownerInfo}>
-            Propietario/s: <strong>{propiedad.propietarioNombre}</strong>
-          </p>
-
-          {/* === NUEVA SECCIÓN: Información Detallada === */}
-          <div className={styles.section} style={{ marginTop: '2rem', backgroundColor: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
-            <h3 style={{ borderBottom: '1px solid #334155', paddingBottom: '0.5rem', marginBottom: '1rem', color: '#94a3b8' }}>
-              📍 Información de la Propiedad
+          {/* 🏠 Información de la Propiedad */}
+          <div className={styles.section}>
+            <h3 className={styles.sectionTitle}>
+              <span className={styles.sectionIcon}>🏠</span>
+              Información de la propiedad
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-              <div>
-                <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Dirección:</span>
-                <div style={{ fontWeight: 'bold', color: 'white' }}>{propiedad.direccion || '-'}</div>
+            <div className={styles.infoGrid}>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Dirección</span>
+                <span className={styles.infoValue}>{propiedad.direccion || '-'}</span>
               </div>
-              <div>
-                <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Localidad:</span>
-                <div style={{ fontWeight: 'bold', color: 'white' }}>{propiedad.localidad || '-'}</div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Localidad</span>
+                <span className={styles.infoValue}>{propiedad.localidad || '-'}</span>
               </div>
-              <div>
-                <span style={{ color: '#64748b', fontSize: '0.9rem' }}>API:</span>
-                <div style={{ fontWeight: 'bold', color: 'white' }}>{propiedad.api || '-'}</div>
-              </div>
-              <div>
-                <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Partida Inmobiliaria:</span>
-                <div style={{ fontWeight: 'bold', color: 'white' }}>{propiedad.partidaInmobiliaria || '-'}</div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Partida Inmobiliaria</span>
+                <span className={styles.infoValue}>{propiedad.partidaInmobiliaria || '-'}</span>
               </div>
             </div>
-
-            <h3 style={{ borderBottom: '1px solid #334155', paddingBottom: '0.5rem', marginBottom: '1rem', color: '#94a3b8' }}>
-              👥 Datos de Propietarios
-            </h3>
-            {propietariosList.length > 0 ? (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem' }}>
-                  <thead>
-                    <tr style={{ textAlign: 'left', borderBottom: '2px solid #334155' }}>
-                      <th style={{ padding: '0.75rem', color: '#94a3b8' }}>Nombre</th>
-                      <th style={{ padding: '0.75rem', color: '#94a3b8' }}>DNI</th>
-                      <th style={{ padding: '0.75rem', color: '#94a3b8' }}>Celular</th>
-                      <th style={{ padding: '0.75rem', color: '#94a3b8' }}>Email</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {propietariosList.map((p, index) => (
-                      <tr key={index} style={{ borderBottom: '1px solid #1e293b', backgroundColor: index % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent' }}>
-                        <td style={{ padding: '0.75rem', fontWeight: '500' }}>{p.nombreCompleto}</td>
-                        <td style={{ padding: '0.75rem' }}>{p.dni}</td>
-                        <td style={{ padding: '0.75rem' }}>{p.celular}</td>
-                        <td style={{ padding: '0.75rem' }}>{p.email}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p style={{ color: '#64748b', fontStyle: 'italic' }}>No hay información detallada de propietarios.</p>
-            )}
           </div>
-          {/* === FIN NUEVA SECCIÓN === */}
 
-          {/* Mensaje informativo según el estado */}
-          {propiedad.estado === 'PENDIENTE' && !canChangeStatus && (
-            <div className={styles.statusAlert}>
-              <span className={styles.alertIcon}>ℹ️</span>
-              <p>Esta propiedad está pendiente de revisión por un administrador.</p>
-            </div>
-          )}
-          {propiedad.estado === 'RECHAZADO' && (
-            <div className={`${styles.statusAlert} ${styles.alertDanger}`}>
-              <span className={styles.alertIcon}>⚠️</span>
-              <p>Esta propiedad ha sido rechazada. No se puede generar mandato.</p>
-            </div>
-          )}
-          {propiedad.estado === 'APROBADO' && !propiedad.mandato && user?.rol === 'ASESOR' && (
-            <div className={`${styles.statusAlert} ${styles.alertSuccess}`}>
-              <span className={styles.alertIcon}>✅</span>
-              <p>Propiedad aprobada. Ya puedes generar el mandato.</p>
-            </div>
-          )}
-
-          {propiedad.observaciones && (
+          {/* 👤 Datos del Propietario */}
+          {propietariosList.length > 0 && (
             <div className={styles.section}>
-              <h3>Observaciones del revisor</h3>
-              <div className={styles.observationsBox}>
-                <p>{propiedad.observaciones}</p>
-              </div>
-            </div>
-          )}
+              <h3 className={styles.sectionTitle}>
+                <span className={styles.sectionIcon}>👤</span>
+                Datos del propietario
+              </h3>
+              <table className={styles.ownerTable}>
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>DNI</th>
+                    <th>Celular</th>
+                    <th>Email</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {propietariosList.map((p, index) => (
+                    <tr key={index}>
+                      <td>{p.nombreCompleto}</td>
+                      <td>{p.dni}</td>
+                      <td>{p.celular}</td>
+                      <td>{p.email}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-          {/* Sección de Mandato - Solo visible para ASESOR o cuando ya existe mandato */}
-          {(user?.rol === 'ASESOR' || propiedad.mandato) && (
-            <div className={styles.mandatoSection} data-section="mandato">
-              <h3>Mandato</h3>
-              {propiedad.mandato ? (
-              <div className={styles.mandatoExistente}>
-                <div className={styles.mandatoDetails}>
-                  <div className={styles.mandatoRow}>
-                    <span>Plazo:</span>
-                    <strong>{propiedad.mandato.plazoDias} días</strong>
-                  </div>
-                  <div className={styles.mandatoRow}>
-                    <span>Monto:</span>
-                    <strong>
-                      ${propiedad.mandato.monto.toLocaleString('es-AR')} {propiedad.mandato.moneda || 'ARS'}
-                    </strong>
-                  </div>
-                  {propiedad.mandato.observaciones && (
-                    <div className={styles.mandatoRow}>
-                      <span>Observaciones:</span>
-                      <span>{propiedad.mandato.observaciones}</span>
-                    </div>
-                  )}
-                  <div className={styles.mandatoRow}>
-                    <span>Fecha de creación:</span>
-                    <span>{new Date(propiedad.mandato.createdAt).toLocaleDateString('es-AR', {
+              {/* Fecha de creación + Asesor - DESTACADO */}
+              <div className={styles.metaInfo}>
+                <div className={styles.metaItem}>
+                  <span className={styles.metaLabel}>Fecha de creación</span>
+                  <span className={styles.metaValue}>
+                    {new Date(propiedad.createdAt).toLocaleDateString('es-AR', {
                       day: '2-digit',
                       month: '2-digit',
                       year: 'numeric',
                       hour: '2-digit',
                       minute: '2-digit'
-                    })}</span>
+                    })}
+                  </span>
+                </div>
+                {propiedad.asesor && (
+                  <div className={styles.metaItem}>
+                    <span className={styles.metaLabel}>Asesor</span>
+                    <span className={styles.metaValue}>
+                      {propiedad.asesor.nombre} ({propiedad.asesor.email})
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Mandato */}
+          <div className={styles.section}>
+            <h3 className={styles.sectionTitle}>
+              <span className={styles.sectionIcon}>📄</span>
+              Mandato
+            </h3>
+            
+            {propiedad.mandato ? (
+              // Tiene mandato - mostrar detalles
+              <div className={styles.mandateBox}>
+                <div className={styles.mandateGrid}>
+                  <div className={styles.infoItem}>
+                    <span className={styles.infoLabel}>Plazo</span>
+                    <span className={styles.infoValue}>{propiedad.mandato.plazoDias} días</span>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <span className={styles.infoLabel}>Monto</span>
+                    <span className={styles.infoValue}>
+                      ${propiedad.mandato.monto.toLocaleString('es-AR')} {propiedad.mandato.moneda || 'ARS'}
+                    </span>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <span className={styles.infoLabel}>Fecha de creación</span>
+                    <span className={styles.infoValue}>
+                      {new Date(propiedad.mandato.createdAt).toLocaleDateString('es-AR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
                   </div>
                 </div>
                 {canDownloadMandato && (
-                  <div className={styles.mandatoActions}>
-                    <button 
-                      onClick={handleDownloadWord}
-                      disabled={downloadingWord}
-                      className={styles.downloadMandatoButton}
-                    >
-                      <span style={{ fontSize: '1.3rem', marginRight: '8px' }}>📥</span>
-                      <span style={{ fontWeight: 'bold' }}>
-                        {downloadingWord ? 'DESCARGANDO...' : 'DESCARGAR MANDATO'}
-                      </span>
-                    </button>
-                  </div>
+                  <button 
+                    onClick={handleDownloadWord}
+                    disabled={downloadingWord}
+                    className={styles.downloadButton}
+                  >
+                    {downloadingWord ? 'Descargando...' : 'Descargar Mandato'}
+                  </button>
                 )}
               </div>
+            ) : propiedad.estado === 'APROBADO' ? (
+              // Aprobada pero sin mandato - mostrar botón generar
+              <div className={styles.mandateApproved}>
+                <div className={styles.approvedMessage}>
+                  <span className={styles.checkIcon}>✅</span>
+                  <p>Propiedad aprobada. Ya puedes generar el mandato.</p>
+                </div>
+                <button 
+                  onClick={() => navigate(`/propiedades/${id}/mandato`)}
+                  className={styles.generateButton}
+                >
+                  Generar mandato
+                </button>
+              </div>
             ) : (
-              <div className={styles.mandatoNoGenerado}>
-                {propiedad.estado === 'APROBADO' ? (
-                  <>
-                    <p className={styles.mandatoMessage}>No hay mandato generado para esta propiedad.</p>
-                    <button 
-                      onClick={() => navigate(`/propiedades/${id}/mandato`)}
-                      className={styles.generateMandatoButton}
-                    >
-                      📝 Generar mandato
-                    </button>
-                  </>
-                ) : (
-                  <div className={styles.mandatoDisabled}>
-                    <span className={styles.lockIcon}>🔒</span>
-                    <p>Para generar el mandato, la propiedad debe estar <strong>APROBADA</strong> por un administrador.</p>
-                    {propiedad.estado === 'PENDIENTE' && (
-                      <p className={styles.waitingText}>Estado actual: Pendiente de revisión</p>
-                    )}
-                    {propiedad.estado === 'RECHAZADO' && (
-                      <p className={styles.rejectedText}>Esta propiedad ha sido rechazada</p>
-                    )}
-                  </div>
-                )}
+              // Pendiente - mostrar candado
+              <div className={styles.mandateLocked}>
+                <span className={styles.lockIcon}>🔒</span>
+                <p className={styles.lockMessage}>
+                  Para generar el mandato, la propiedad debe estar <strong>APROBADA</strong> por un administrador.
+                </p>
+                <p className={styles.lockSubtext}>Estado actual: Pendiente de revisión</p>
               </div>
             )}
           </div>
-          )}
 
-          {propiedad.descripcion && (
-            <div className={styles.section}>
-              <h3>Descripción</h3>
-              <p>{propiedad.descripcion}</p>
-            </div>
-          )}
 
+          {/* Documentos */}
           <div className={styles.section}>
-            <h3>Fecha de creación</h3>
-            <p>{new Date(propiedad.createdAt).toLocaleString()}</p>
-          </div>
-
-          {propiedad.asesor && (
-            <div className={styles.section}>
-              <h3>Asesor</h3>
-              <p>
-                {propiedad.asesor.nombre} ({propiedad.asesor.email})
-              </p>
-            </div>
-          )}
-
-          {/* Sección de Documentos */}
-          <div className={styles.section}>
-            <h3>Documentos</h3>
+            <h3 className={styles.sectionTitle}>
+              <span className={styles.sectionIcon}>📁</span>
+              Documentos
+            </h3>
             
             {propiedad.documentos && propiedad.documentos.length > 0 ? (
               <>
-                <div className={styles.uploadDocumentCallout}>
-                  <div className={styles.calloutContent}>
-                    <span className={styles.calloutIcon}>📎</span>
-                    <span className={styles.calloutText}>¿Necesitas agregar más documentación?</span>
-                  </div>
+                <div className={styles.documentsCallout}>
+                  <span className={styles.calloutText}>¿Necesitas agregar más documentación?</span>
                   <button 
                     onClick={() => navigate(`/propiedades/${id}/upload`)}
-                    className={styles.uploadDocumentButton}
+                    className={styles.uploadButton}
                   >
-                    <span style={{ fontSize: '1.3rem', marginRight: '8px' }}>📄</span>
-                    <span style={{ fontWeight: 'bold' }}>SUBIR DOCUMENTACIÓN</span>
+                    Subir Documentación
                   </button>
                 </div>
                 
-                <div className={styles.documentosTable}>
+                <div className={styles.documentsTable}>
                   <table>
                     <thead>
                       <tr>
                         <th>Tipo</th>
-                        <th>Fecha de carga</th>
+                        <th>Fecha de Carga</th>
                         <th>Acciones</th>
                       </tr>
                     </thead>
@@ -498,21 +434,23 @@ const PropiedadDetail = () => {
                       {propiedad.documentos.map((doc) => (
                         <tr key={doc.id}>
                           <td>{doc.tipo}</td>
-                          <td>{new Date(doc.createdAt).toLocaleDateString('es-AR', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}</td>
+                          <td>
+                            {new Date(doc.createdAt).toLocaleDateString('es-AR', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </td>
                           <td>
                             <a 
                               href={`${import.meta.env.VITE_API_URL}/${doc.rutaArchivo}`}
                               target="_blank" 
                               rel="noreferrer"
-                              className={styles.viewDocumentButton}
+                              className={styles.viewDocButton}
                             >
-                              📄 Ver Documento
+                              ver documento
                             </a>
                           </td>
                         </tr>
@@ -523,15 +461,14 @@ const PropiedadDetail = () => {
               </>
             ) : (
               <div className={styles.noDocumentsBox}>
-                <div className={styles.emptyStateIcon}>📂</div>
-                <p className={styles.emptyStateTitle}>No hay documentos cargados aún</p>
-                <p className={styles.emptyStateSubtitle}>Sube tu primera documentación para esta propiedad</p>
+                <span className={styles.emptyIcon}>📂</span>
+                <p className={styles.emptyTitle}>No hay documentos cargados aún</p>
+                <p className={styles.emptySubtitle}>Sube tu primera documentación para esta propiedad</p>
                 <button 
                   onClick={() => navigate(`/propiedades/${id}/upload`)}
-                  className={styles.uploadFirstButton}
+                  className={styles.uploadButton}
                 >
-                  <span style={{ fontSize: '1.5rem', marginRight: '10px' }}>📄</span>
-                  <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>SUBIR DOCUMENTACIÓN</span>
+                  Subir Documentación
                 </button>
               </div>
             )}

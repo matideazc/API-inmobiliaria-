@@ -3,6 +3,7 @@ import axios from 'axios';
 // Crear instancia de axios con la URL base desde variables de entorno
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true, // CRÍTICO: Enviar cookies en requests cross-origin
   headers: {
     'Content-Type': 'application/json',
   },
@@ -16,34 +17,17 @@ export const setAuthClearCallback = (callback: () => void) => {
   clearAuthCallback = callback;
 };
 
-// Interceptor para agregar el token JWT en cada request
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
 // Interceptor para manejar respuestas y errores globalmente
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     // Si recibimos 401, el token expiró o es inválido
     if (error.response?.status === 401) {
-      // Limpiar auth usando el callback si está disponible
+      // Llamar al callback de clearAuth si está configurado
       if (clearAuthCallback) {
         clearAuthCallback();
-      } else {
-        // Fallback: limpiar localStorage directamente
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
       }
+      // Redirigir a login
       window.location.href = '/login';
     }
     return Promise.reject(error);

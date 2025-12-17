@@ -1,12 +1,9 @@
 // src/pages/PropiedadesList.tsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Search, Home as HomeIcon, User, Calendar } from 'lucide-react';
 import { fetchExpedientes } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import PageContainer from '../layout/PageContainer';
-import Card from '../ui/Card';
-import Badge from '../ui/Badge';
-import Button from '../ui/Button';
 import styles from './PropiedadesList.module.css';
 
 interface Usuario {
@@ -50,7 +47,6 @@ const PropiedadesList: React.FC = () => {
   // Estados de filtros
   const [filtroNombre, setFiltroNombre] = useState('');
   const [filtroPropietario, setFiltroPropietario] = useState('');
-  const [filtroAsesor, setFiltroAsesor] = useState('');
   const [filtroFecha, setFiltroFecha] = useState('');
 
   useEffect(() => {
@@ -65,7 +61,6 @@ const PropiedadesList: React.FC = () => {
       setLoading(true);
       setError('');
 
-      // Si es ASESOR, filtrar por su ID
       const params: { page: number; limit: number; asesorId?: number } = {
         page: pageToLoad,
         limit: limit,
@@ -79,74 +74,63 @@ const PropiedadesList: React.FC = () => {
 
       let lista: Propiedad[] = response.data || [];
 
-      // Filtro client-side adicional para ASESOR (red de contención)
       if (user.rol === 'ASESOR') {
         lista = lista.filter(exp => exp.asesor?.id === user.id);
       }
 
       setPropiedades(lista);
 
-      // Leer paginación del backend
       if (response.pagination) {
         setTotalPages(response.pagination.totalPages || 1);
       } else {
         setTotalPages(1);
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Error al cargar propiedades');
+      console.error('Error al cargar propiedades:', err);
+      console.error('Respuesta del error:', err.response?.data);
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || 'Error al cargar propiedades';
+      setError(errorMessage);
       setPropiedades([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Efecto para aplicar filtros
   useEffect(() => {
     aplicarFiltros();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [propiedades, filtroNombre, filtroPropietario, filtroAsesor, filtroFecha]);
+  }, [propiedades, filtroNombre, filtroPropietario, filtroFecha]);
 
   const aplicarFiltros = () => {
     let resultado = [...propiedades];
 
-    // Filtro por nombre de propiedad
     if (filtroNombre.trim()) {
       resultado = resultado.filter(prop =>
         prop.titulo.toLowerCase().includes(filtroNombre.toLowerCase())
       );
     }
 
-    // Filtro por propietario
     if (filtroPropietario.trim()) {
       resultado = resultado.filter(prop =>
         prop.propietarioNombre.toLowerCase().includes(filtroPropietario.toLowerCase())
       );
     }
 
-    // Filtro por asesor (solo para admin/revisor)
-    if (filtroAsesor.trim()) {
-      resultado = resultado.filter(prop =>
-        prop.asesor?.nombre.toLowerCase().includes(filtroAsesor.toLowerCase())
-      );
-    }
-
-    // Filtro por fecha de creación
     if (filtroFecha) {
-      const fechaFiltro = new Date(filtroFecha);
+      // Permitir formato dd/mm/yyyy o parcial
+      const filtroLimpio = filtroFecha.trim();
       resultado = resultado.filter(prop => {
         const fechaProp = new Date(prop.createdAt);
-        return fechaProp.toDateString() === fechaFiltro.toDateString();
+        const dia = String(fechaProp.getDate()).padStart(2, '0');
+        const mes = String(fechaProp.getMonth() + 1).padStart(2, '0');
+        const anio = String(fechaProp.getFullYear());
+        const fechaFormateada = `${dia}/${mes}/${anio}`;
+        
+        return fechaFormateada.includes(filtroLimpio);
       });
     }
 
     setPropiedadesFiltradas(resultado);
-  };
-
-  const limpiarFiltros = () => {
-    setFiltroNombre('');
-    setFiltroPropietario('');
-    setFiltroAsesor('');
-    setFiltroFecha('');
   };
 
   const handlePrev = () => {
@@ -157,140 +141,97 @@ const PropiedadesList: React.FC = () => {
     if (page < totalPages) setPage((p) => p + 1);
   };
 
-  const getEstadoBadgeVariant = (estado: string): 'success' | 'danger' | 'warning' => {
-    switch (estado) {
-      case 'APROBADO':
-        return 'success';
-      case 'RECHAZADO':
-        return 'danger';
-      default:
-        return 'warning';
-    }
-  };
-
-  const formatMonto = (monto: number, moneda?: 'ARS' | 'USD') => {
-    const currency = moneda || 'ARS';
-    return monto.toLocaleString('es-AR', {
-      style: 'currency',
-      currency: currency,
-      maximumFractionDigits: 0,
-    });
-  };
-
   const formatFecha = (fecha: string) => {
     return new Date(fecha).toLocaleDateString('es-AR');
   };
 
   if (loading) {
     return (
-      <PageContainer>
+      <div className={styles.pageContainer}>
         <div className={styles.loadingContainer}>
           <p className={styles.loadingText}>Cargando propiedades...</p>
         </div>
-      </PageContainer>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <PageContainer>
+      <div className={styles.pageContainer}>
         <div className={styles.errorContainer}>
           <p className={styles.errorText}>❌ {error}</p>
-          <Button onClick={() => loadPropiedades(page)} variant="secondary">
+          <button onClick={() => loadPropiedades(page)} className={styles.retryBtn}>
             Reintentar
-          </Button>
+          </button>
         </div>
-      </PageContainer>
+      </div>
     );
   }
 
   return (
-    <PageContainer
-      title="Propiedades"
-      actions={
-        <Button onClick={() => navigate('/propiedades/nueva')} variant="primary" size="lg">
-          <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>➕</span>
-          <span style={{ fontWeight: 'bold' }}>CREAR NUEVA PROPIEDAD</span>
-        </Button>
-      }
-    >
-      {/* Filtros */}
-      <div className={styles.filterContainer}>
-        <h3 className={styles.filterTitle}>Buscar Propiedades</h3>
-        <div className={styles.filterGrid}>
-          <div className={styles.filterField}>
-            <label className={styles.filterLabel}>
-              <span style={{ fontSize: '1.3rem' }}>🏠</span>
-              <span>Nombre de Propiedad</span>
-            </label>
+    <div className={styles.pageContainer}>
+      {/* Header */}
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>Propiedades</h1>
+        <button onClick={() => navigate('/propiedades/nueva')} className={styles.newPropBtn}>
+          <span className={styles.plusIcon}>+</span>
+          CARGAR NUEVA PROPIEDAD
+        </button>
+      </div>
+
+      {/* Search Panel */}
+      <div className={styles.searchPanel}>
+        <div className={styles.searchHeader}>
+          <Search size={24} />
+          <h2 className={styles.searchTitle}>Buscar propiedades</h2>
+        </div>
+
+        <div className={styles.searchGrid}>
+          <div className={styles.searchField}>
+            <div className={styles.searchLabel}>
+              <HomeIcon size={20} className={styles.searchIcon} />
+              <span>Nombre de propiedad</span>
+            </div>
             <input
               type="text"
-              className={styles.filterInput}
-              placeholder="Ej: Casa Francia, Departamento..."
+              className={styles.searchInput}
+              placeholder="Ej: Casa Sargento Cabral, Depart..."
               value={filtroNombre}
               onChange={(e) => setFiltroNombre(e.target.value)}
             />
           </div>
 
-          <div className={styles.filterField}>
-            <label className={styles.filterLabel}>
-              <span style={{ fontSize: '1.3rem' }}>👤</span>
+          <div className={styles.searchField}>
+            <div className={styles.searchLabel}>
+              <User size={20} className={styles.searchIcon} />
               <span>Propietario</span>
-            </label>
+            </div>
             <input
               type="text"
-              className={styles.filterInput}
-              placeholder="Ej: Juan Pérez, María García..."
+              className={styles.searchInput}
+              placeholder="Ej: Juan Pérez, Laura Mendoza..."
               value={filtroPropietario}
               onChange={(e) => setFiltroPropietario(e.target.value)}
             />
           </div>
 
-          {/* Filtro de asesor solo visible para ADMIN y REVISOR */}
-          {(user?.rol === 'ADMIN' || user?.rol === 'REVISOR') && (
-            <div className={styles.filterField}>
-              <label className={styles.filterLabel}>
-                <span style={{ fontSize: '1.3rem' }}>👔</span>
-                <span>Asesor</span>
-              </label>
-              <input
-                type="text"
-                className={styles.filterInput}
-                placeholder="Ej: Agostina, Matías..."
-                value={filtroAsesor}
-                onChange={(e) => setFiltroAsesor(e.target.value)}
-              />
+          <div className={styles.searchField}>
+            <div className={styles.searchLabel}>
+              <Calendar size={20} className={styles.searchIcon} />
+              <span>Fecha de creación</span>
             </div>
-          )}
-
-          <div className={styles.filterField}>
-            <label className={styles.filterLabel}>
-              <span style={{ fontSize: '1.3rem' }}>📅</span>
-              <span>Fecha de Creación</span>
-            </label>
             <input
-              type="date"
-              className={styles.filterInput}
+              type="text"
+              className={styles.searchInput}
+              placeholder="dd/mm/yyyy"
               value={filtroFecha}
               onChange={(e) => setFiltroFecha(e.target.value)}
             />
           </div>
         </div>
-
-        {(filtroNombre || filtroPropietario || filtroAsesor || filtroFecha) && (
-          <div className={styles.filterActions}>
-            <Button onClick={limpiarFiltros} variant="secondary" size="md">
-              <span style={{ fontSize: '1.1rem', marginRight: '6px' }}>🗑️</span>
-              Limpiar Filtros
-            </Button>
-            <span className={styles.filterCount}>
-              <span style={{ fontSize: '1.1rem', marginRight: '6px' }}>📊</span>
-              {propiedadesFiltradas.length} {propiedadesFiltradas.length === 1 ? 'resultado' : 'resultados'}
-            </span>
-          </div>
-        )}
       </div>
 
+      {/* Property Cards */}
       {propiedadesFiltradas.length === 0 ? (
         <div className={styles.emptyState}>
           <p className={styles.emptyText}>
@@ -298,31 +239,23 @@ const PropiedadesList: React.FC = () => {
               ? 'No hay propiedades para mostrar'
               : 'No se encontraron propiedades con los filtros aplicados'}
           </p>
-          {propiedades.length === 0 ? (
-            <Button onClick={() => navigate('/propiedades/nueva')} variant="primary">
-              ➕ Crear la primera propiedad
-            </Button>
-          ) : (
-            <Button onClick={limpiarFiltros} variant="secondary">
-              Limpiar filtros
-            </Button>
-          )}
         </div>
       ) : (
         <>
           <div className={styles.grid}>
             {propiedadesFiltradas.map((prop) => (
-              <Card
+              <div
                 key={prop.id}
-                hover
-                onClick={() => navigate(`/propiedades/${prop.id}`)}
                 className={styles.card}
+                onClick={() => navigate(`/propiedades/${prop.id}`)}
               >
                 <div className={styles.cardHeader}>
                   <h3 className={styles.cardTitle}>{prop.titulo}</h3>
-                  <Badge variant={getEstadoBadgeVariant(prop.estado)}>
-                    {prop.estado}
-                  </Badge>
+                  <span className={`${styles.badge} ${styles[`badge${prop.estado}`]}`}>
+                    {prop.estado === 'APROBADO' ? 'Aprobado' : 
+                     prop.estado === 'RECHAZADO' ? 'Rechazado' : 
+                     'En espera'}
+                  </span>
                 </div>
 
                 <div className={styles.cardBody}>
@@ -342,45 +275,34 @@ const PropiedadesList: React.FC = () => {
                     <span className={styles.cardLabel}>Fecha:</span>
                     <span className={styles.cardValue}>{formatFecha(prop.createdAt)}</span>
                   </div>
-
-                  {prop.mandato && (
-                    <div className={styles.mandatoChip}>
-                      <span className={styles.mandatoIcon}>📄</span>
-                      <span className={styles.mandatoText}>
-                        Mandato: {formatMonto(prop.mandato.monto, prop.mandato.moneda)} • {prop.mandato.plazo}
-                      </span>
-                    </div>
-                  )}
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
 
-          {/* Paginación */}
+          {/* Pagination */}
           <div className={styles.pagination}>
-            <Button
+            <button
               onClick={handlePrev}
               disabled={page === 1}
-              variant="secondary"
-              size="sm"
+              className={styles.paginationBtn}
             >
-              ← Anterior
-            </Button>
+              &lt; Anterior
+            </button>
             <span className={styles.pageInfo}>
               Página {page} de {totalPages}
             </span>
-            <Button
+            <button
               onClick={handleNext}
               disabled={page === totalPages}
-              variant="secondary"
-              size="sm"
+              className={styles.paginationBtn}
             >
-              Siguiente →
-            </Button>
+              Siguiente &gt;
+            </button>
           </div>
         </>
       )}
-    </PageContainer>
+    </div>
   );
 };
 

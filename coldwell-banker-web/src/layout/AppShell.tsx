@@ -11,10 +11,11 @@ interface AppShellProps {
 export default function AppShell({ children }: AppShellProps) {
   const location = useLocation();
 
-  // No mostrar shell en login
+  // No mostrar shell en login ni en home
   const isLoginPage = location.pathname === '/login';
+  const isHomePage = location.pathname === '/';
 
-  if (isLoginPage) {
+  if (isLoginPage || isHomePage) {
     return <>{children}</>;
   }
 

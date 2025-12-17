@@ -2,6 +2,8 @@
 import React, { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../services/api';
+import { logger } from '../utils/logger';
+import { sanitizeString, validateLength } from '../utils/validation';
 import styles from './NuevaPropiedad.module.css';
 
 // lo que (según tu backend) nos devuelve al crear
@@ -36,7 +38,6 @@ const NuevaPropiedad: React.FC = () => {
   const [titulo, setTitulo] = useState('');
   const [tipoPropiedad, setTipoPropiedad] = useState('');
   const [direccion, setDireccion] = useState('');
-  const [numeroApi, setNumeroApi] = useState('');
   const [partidaInmobiliaria, setPartidaInmobiliaria] = useState('');
   const [localidad, setLocalidad] = useState('');
   const [error, setError] = useState('');
@@ -86,16 +87,20 @@ const NuevaPropiedad: React.FC = () => {
     e.preventDefault();
     setError('');
 
-    if (!titulo.trim()) {
-      setError('El nombre de la propiedad es obligatorio');
+    // Sanitizar inputs
+    const tituloSanitized = sanitizeString(titulo);
+    const tipoSanitized = sanitizeString(tipoPropiedad);
+    const direccionSanitized = sanitizeString(direccion);
+    const partidaSanitized = sanitizeString(partidaInmobiliaria);
+    const localidadSanitized = sanitizeString(localidad);
+
+    // Validaciones mejoradas
+    if (!tituloSanitized || !validateLength(tituloSanitized, 3, 200)) {
+      setError('El nombre de la propiedad debe tener entre 3 y 200 caracteres');
       return;
     }
-    if (!tipoPropiedad.trim()) {
-      setError('El tipo de propiedad es obligatorio');
-      return;
-    }
-    if (numeroApi.trim() && numeroApi.trim().length !== 16) {
-      setError('El número de API debe tener exactamente 16 dígitos');
+    if (!tipoSanitized || !validateLength(tipoSanitized, 2, 100)) {
+      setError('El tipo de propiedad debe tener entre 2 y 100 caracteres');
       return;
     }
 
@@ -103,34 +108,31 @@ const NuevaPropiedad: React.FC = () => {
 
     try {
       const token = localStorage.getItem('token');
-      console.log('🔑 Token presente:', !!token);
+      logger.debug('🔑 Token presente:', !!token);
 
       const body: any = {
-        titulo: titulo.trim(),
-        tipoPropiedad: tipoPropiedad.trim(),
+        titulo: tituloSanitized,
+        tipoPropiedad: tipoSanitized,
         estado: 'PENDIENTE',
       };
 
-      if (direccion.trim()) {
-        body.direccion = direccion.trim();
+      if (direccionSanitized) {
+        body.direccion = direccionSanitized;
       }
-      if (numeroApi.trim()) {
-        body.api = numeroApi.trim();
+      if (partidaSanitized) {
+        body.partidaInmobiliaria = partidaSanitized;
       }
-      if (partidaInmobiliaria.trim()) {
-        body.partidaInmobiliaria = partidaInmobiliaria.trim();
-      }
-      if (localidad.trim()) {
-        body.localidad = localidad.trim();
+      if (localidadSanitized) {
+        body.localidad = localidadSanitized;
       }
 
       body.propietarios = propietarios;
 
-      console.log('📤 Enviando al backend:', body);
+      logger.debug('📤 Enviando al backend:', body);
 
       const response = await apiClient.post<CreatedPropiedadResponse>('/expedientes', body);
 
-      console.log('✅ Respuesta del backend:', response.data);
+      logger.debug('✅ Respuesta del backend:', response.data);
 
       const propiedadId = response.data?.expediente?.id;
 
@@ -202,7 +204,7 @@ const NuevaPropiedad: React.FC = () => {
 
             <div className={styles.inputGroup}>
               <label htmlFor="direccion" className={styles.label}>
-                Calle (o lotes, número, entre calles) <span className={styles.optional}>(opcional)</span>
+                Dirección <span className={styles.optional}>(opcional)</span>
               </label>
               <input
                 id="direccion"
@@ -216,29 +218,7 @@ const NuevaPropiedad: React.FC = () => {
               />
             </div>
 
-            <div className={styles.inputGroup}>
-              <label htmlFor="api" className={styles.label}>
-                Número de API <span className={styles.optional}>(opcional)</span>
-              </label>
-              <input
-                id="api"
-                type="text"
-                value={numeroApi}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, '');
-                  if (value.length <= 16) {
-                    setNumeroApi(value);
-                  }
-                }}
-                disabled={loading}
-                className={styles.input}
-                placeholder="16 dígitos: 1234123412341234"
-                maxLength={16}
-              />
-              {numeroApi && (
-                <span className={styles.charCount}>{numeroApi.length}/16</span>
-              )}
-            </div>
+
 
             <div className={styles.inputGroup}>
               <label htmlFor="partidaInmobiliaria" className={styles.label}>
@@ -276,183 +256,185 @@ const NuevaPropiedad: React.FC = () => {
             <div className={styles.sectionDivider} />
 
             {/* ========== PROPIETARIOS ========== */}
-            <div className={styles.ownersHeaderRow}>
-              <div>
-                <h2 className={styles.sectionTitle}>Propietarios</h2>
-                <p className={styles.sectionSubtitle}>
-                  Completá los datos de los propietarios de la propiedad.
-                </p>
-              </div>
-
-              <div className={styles.ownersCount}>
-                <label htmlFor="cantidadPropietarios">Cantidad</label>
-                <select
-                  id="cantidadPropietarios"
-                  value={propietarios.length}
-                  onChange={handleCantidadChange}
-                  disabled={loading}
-                >
-                  <option value={1}>1</option>
-                  <option value={2}>2</option>
-                  <option value={3}>3</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Lista de propietarios */}
-            <div className={styles.ownersList}>
-              {propietarios.map((propietario, index) => (
-                <div key={index} className={styles.ownerCard}>
-                  {/* Header de la card */}
-                  <div className={styles.ownerCardHeader}>
-                    <span className={styles.ownerChip}>Propietario {index + 1}</span>
-                    {propietario.nombreCompleto && (
-                      <span className={styles.ownerNamePreview}>
-                        {propietario.nombreCompleto}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Grid de 2 columnas */}
-                  <div className={styles.ownerGrid}>
-                    {/* Nombre y Apellido - full width */}
-                    <div className={styles.ownerGridFull}>
-                      <label htmlFor={`nombreCompleto-${index}`} className={styles.label}>
-                        Nombre y Apellido
-                      </label>
-                      <input
-                        id={`nombreCompleto-${index}`}
-                        type="text"
-                        value={propietario.nombreCompleto}
-                        onChange={(e) =>
-                          updatePropietario(index, 'nombreCompleto', e.target.value)
-                        }
-                        disabled={loading}
-                        className={styles.input}
-                        placeholder="Ej: Juan Carlos Pérez"
-                      />
-                    </div>
-
-                    {/* DNI */}
-                    <div>
-                      <label htmlFor={`dni-${index}`} className={styles.label}>
-                        DNI
-                      </label>
-                      <input
-                        id={`dni-${index}`}
-                        type="text"
-                        value={propietario.dni}
-                        onChange={(e) => updatePropietario(index, 'dni', e.target.value)}
-                        disabled={loading}
-                        className={styles.input}
-                        placeholder="Ej: 12345678"
-                      />
-                    </div>
-
-                    {/* Fecha y lugar de nacimiento */}
-                    <div>
-                      <label htmlFor={`fechaNacimiento-${index}`} className={styles.label}>
-                        Fecha y lugar de nacimiento
-                      </label>
-                      <input
-                        id={`fechaNacimiento-${index}`}
-                        type="text"
-                        value={propietario.fechaNacimiento}
-                        onChange={(e) =>
-                          updatePropietario(index, 'fechaNacimiento', e.target.value)
-                        }
-                        disabled={loading}
-                        className={styles.input}
-                        placeholder="Ej: 12/05/1985, Buenos Aires"
-                      />
-                    </div>
-
-                    {/* Domicilio real - full width */}
-                    <div className={styles.ownerGridFull}>
-                      <label htmlFor={`domicilioReal-${index}`} className={styles.label}>
-                        Domicilio real
-                      </label>
-                      <input
-                        id={`domicilioReal-${index}`}
-                        type="text"
-                        value={propietario.domicilioReal}
-                        onChange={(e) =>
-                          updatePropietario(index, 'domicilioReal', e.target.value)
-                        }
-                        disabled={loading}
-                        className={styles.input}
-                        placeholder="Ej: Calle 123, Piso 4, Depto B"
-                      />
-                    </div>
-
-                    {/* Celular */}
-                    <div>
-                      <label htmlFor={`celular-${index}`} className={styles.label}>
-                        Celular
-                      </label>
-                      <input
-                        id={`celular-${index}`}
-                        type="text"
-                        value={propietario.celular}
-                        onChange={(e) => updatePropietario(index, 'celular', e.target.value)}
-                        disabled={loading}
-                        className={styles.input}
-                        placeholder="Ej: +54 9 11 1234-5678"
-                      />
-                    </div>
-
-                    {/* C.U.I.L / C.U.I.T / C.D.I */}
-                    <div>
-                      <label htmlFor={`cuil-${index}`} className={styles.label}>
-                        C.U.I.L / C.U.I.T / C.D.I
-                      </label>
-                      <input
-                        id={`cuil-${index}`}
-                        type="text"
-                        value={propietario.cuil}
-                        onChange={(e) => updatePropietario(index, 'cuil', e.target.value)}
-                        disabled={loading}
-                        className={styles.input}
-                        placeholder="Ej: 20-12345678-9"
-                      />
-                    </div>
-
-                    {/* Estado civil */}
-                    <div>
-                      <label htmlFor={`estadoCivil-${index}`} className={styles.label}>
-                        Estado civil
-                      </label>
-                      <input
-                        id={`estadoCivil-${index}`}
-                        type="text"
-                        value={propietario.estadoCivil}
-                        onChange={(e) =>
-                          updatePropietario(index, 'estadoCivil', e.target.value)
-                        }
-                        disabled={loading}
-                        className={styles.input}
-                        placeholder="Ej: Soltero, Casado, Divorciado"
-                      />
-                    </div>
-
-                    {/* Correo electrónico */}
-                    <div>
-                      <label htmlFor={`email-${index}`} className={styles.label}>
-                        Correo electrónico
-                      </label>
-                      <input
-                        id={`email-${index}`}
-                        type="email"
-                        value={propietario.email}
-                        onChange={(e) => updatePropietario(index, 'email', e.target.value)}
-                        disabled={loading}
-                        className={styles.input}
-                        placeholder="Ej: propietario@email.com"
-                      />
-                    </div>
-                  </div>
+            <div className={styles.propietariosSection}>
+              <div className={styles.ownersHeaderRow}>
+                <div>
+                  <h2 className={styles.sectionTitle}>Propietarios</h2>
+                  <p className={styles.sectionSubtitle}>
+                    Completá los datos de los propietarios de la propiedad.
+                  </p>
                 </div>
-              ))}
+
+                <div className={styles.ownersCount}>
+                  <label htmlFor="cantidadPropietarios">Cantidad</label>
+                  <select
+                    id="cantidadPropietarios"
+                    value={propietarios.length}
+                    onChange={handleCantidadChange}
+                    disabled={loading}
+                  >
+                    <option value={1}>1</option>
+                    <option value={2}>2</option>
+                    <option value={3}>3</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Lista de propietarios */}
+              <div className={styles.ownersList}>
+                {propietarios.map((propietario, index) => (
+                  <div key={index} className={styles.ownerCard}>
+                    {/* Header de la card */}
+                    <div className={styles.ownerCardHeader}>
+                      <span className={styles.ownerChip}>Propietario {index + 1}</span>
+                      {propietario.nombreCompleto && (
+                        <span className={styles.ownerNamePreview}>
+                          {propietario.nombreCompleto}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Grid de 2 columnas */}
+                    <div className={styles.ownerGrid}>
+                      {/* Nombre y Apellido - full width */}
+                      <div className={styles.ownerGridFull}>
+                        <label htmlFor={`nombreCompleto-${index}`} className={styles.label}>
+                          Nombre y Apellido
+                        </label>
+                        <input
+                          id={`nombreCompleto-${index}`}
+                          type="text"
+                          value={propietario.nombreCompleto}
+                          onChange={(e) =>
+                            updatePropietario(index, 'nombreCompleto', e.target.value)
+                          }
+                          disabled={loading}
+                          className={styles.input}
+                          placeholder="Ej: Juan Carlos Pérez"
+                        />
+                      </div>
+
+                      {/* DNI */}
+                      <div>
+                        <label htmlFor={`dni-${index}`} className={styles.label}>
+                          DNI
+                        </label>
+                        <input
+                          id={`dni-${index}`}
+                          type="text"
+                          value={propietario.dni}
+                          onChange={(e) => updatePropietario(index, 'dni', e.target.value)}
+                          disabled={loading}
+                          className={styles.input}
+                          placeholder="Ej: 12345678"
+                        />
+                      </div>
+
+                      {/* Fecha y lugar de nacimiento */}
+                      <div>
+                        <label htmlFor={`fechaNacimiento-${index}`} className={styles.label}>
+                          Fecha y lugar de nacimiento
+                        </label>
+                        <input
+                          id={`fechaNacimiento-${index}`}
+                          type="text"
+                          value={propietario.fechaNacimiento}
+                          onChange={(e) =>
+                            updatePropietario(index, 'fechaNacimiento', e.target.value)
+                          }
+                          disabled={loading}
+                          className={styles.input}
+                          placeholder="Ej: 12/05/1985, Buenos Aires"
+                        />
+                      </div>
+
+                      {/* Domicilio real - full width */}
+                      <div className={styles.ownerGridFull}>
+                        <label htmlFor={`domicilioReal-${index}`} className={styles.label}>
+                          Domicilio real
+                        </label>
+                        <input
+                          id={`domicilioReal-${index}`}
+                          type="text"
+                          value={propietario.domicilioReal}
+                          onChange={(e) =>
+                            updatePropietario(index, 'domicilioReal', e.target.value)
+                          }
+                          disabled={loading}
+                          className={styles.input}
+                          placeholder="Ej: Calle 123, Piso 4, Depto B"
+                        />
+                      </div>
+
+                      {/* Celular */}
+                      <div>
+                        <label htmlFor={`celular-${index}`} className={styles.label}>
+                          Celular
+                        </label>
+                        <input
+                          id={`celular-${index}`}
+                          type="text"
+                          value={propietario.celular}
+                          onChange={(e) => updatePropietario(index, 'celular', e.target.value)}
+                          disabled={loading}
+                          className={styles.input}
+                          placeholder="Ej: +54 9 11 1234-5678"
+                        />
+                      </div>
+
+                      {/* C.U.I.L / C.U.I.T / C.D.I */}
+                      <div>
+                        <label htmlFor={`cuil-${index}`} className={styles.label}>
+                          C.U.I.L / C.U.I.T / C.D.I
+                        </label>
+                        <input
+                          id={`cuil-${index}`}
+                          type="text"
+                          value={propietario.cuil}
+                          onChange={(e) => updatePropietario(index, 'cuil', e.target.value)}
+                          disabled={loading}
+                          className={styles.input}
+                          placeholder="Ej: 20-12345678-9"
+                        />
+                      </div>
+
+                      {/* Estado civil */}
+                      <div>
+                        <label htmlFor={`estadoCivil-${index}`} className={styles.label}>
+                          Estado civil
+                        </label>
+                        <input
+                          id={`estadoCivil-${index}`}
+                          type="text"
+                          value={propietario.estadoCivil}
+                          onChange={(e) =>
+                            updatePropietario(index, 'estadoCivil', e.target.value)
+                          }
+                          disabled={loading}
+                          className={styles.input}
+                          placeholder="Ej: Soltero, Casado, Divorciado"
+                        />
+                      </div>
+
+                      {/* Correo electrónico */}
+                      <div>
+                        <label htmlFor={`email-${index}`} className={styles.label}>
+                          Correo electrónico
+                        </label>
+                        <input
+                          id={`email-${index}`}
+                          type="email"
+                          value={propietario.email}
+                          onChange={(e) => updatePropietario(index, 'email', e.target.value)}
+                          disabled={loading}
+                          className={styles.input}
+                          placeholder="Ej: propietario@email.com"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {error && <div className={styles.error}>{error}</div>}
@@ -467,15 +449,15 @@ const NuevaPropiedad: React.FC = () => {
                 Cancelar
               </button>
               <button type="submit" disabled={loading} className={styles.submitButton}>
-                {loading ? 'Creando...' : '✅ Crear propiedad'}
+                {loading ? 'Creando...' : 'CREAR PROPIEDAD'}
               </button>
             </div>
           </form>
 
           <div className={styles.infoBox}>
+            <div className={styles.infoIcon}>ℹ️</div>
             <p className={styles.infoText}>
-              📘 La propiedad se creará con estado <strong>PENDIENTE</strong>. Un revisor o
-              administrador podrá cambiar el estado más adelante.
+              La propiedad se creará con estado <strong>PENDIENTE</strong>. Un revisor o administrador podrá cambiar el estado más adelante.
             </p>
           </div>
         </div>
