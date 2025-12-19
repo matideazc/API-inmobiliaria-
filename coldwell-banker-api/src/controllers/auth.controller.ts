@@ -66,8 +66,9 @@ try {
     res.cookie('token', token, {
       httpOnly: true,  // No accesible desde JavaScript (protección XSS)
       secure: isProduction,  // true en producción (Railway HTTPS), false en local
-      sameSite: isProduction ? 'none' : 'lax',  // 'none' para Railway+Vercel, 'lax' para localhost
+      sameSite: isProduction ? 'strict' : 'lax',  // 'strict' para same-site en orbe.ar
       maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 días
+      domain: isProduction ? '.orbe.ar' : undefined,  // Dominio compartido para subdominios
       path: '/'  // Cookie disponible en toda la app
     });
 

@@ -46,16 +46,16 @@ const loginLimiter = rateLimit({
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:5173',
   'http://localhost:5173',
-  'https://api-inmobiliaria-two.vercel.app'  // Dominio exacto de Vercel
+  'https://app.orbe.ar'  // Dominio de producción Vercel
 ];
 
 const corsOptions = {
   origin: function (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) {
     // Permitir requests sin origin (como mobile apps o Postman) o desde origins permitidas
-    if (!origin || allowedOrigins.some(allowed => origin.includes(allowed.replace('https://', '').replace('http://', '')))) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(null, true); // En producción temporal: permitir todos para debugging
+      callback(null, false);
     }
   },
   credentials: true,  // CRÍTICO: Permite enviar cookies cross-domain
