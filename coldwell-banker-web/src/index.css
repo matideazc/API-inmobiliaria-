@@ -3,6 +3,21 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  /* Prevenir cursor de texto en elementos que no son inputs */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Permitir selección solo en inputs y áreas de texto */
+input,
+textarea,
+[contenteditable="true"] {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 :root {
