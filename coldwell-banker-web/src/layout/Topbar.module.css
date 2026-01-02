@@ -26,7 +26,8 @@
 }
 
 .brandLogo {
-  height: 32px;
+  height: 36px; /* Más grande para el isologo */
+  width: auto;
   filter: brightness(1.1);
 }
 

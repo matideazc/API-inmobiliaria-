@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import styles from './Topbar.module.css';
-import orbeLogo from '../assets/images/orbe_sin_fondo_blanco.png';
+import cbLogo from '../assets/images/isologo_cb.png';
 import logoutIcon from '../assets/icons/cerrar-sesion.png';
 
 export default function Topbar() {
@@ -16,9 +16,9 @@ export default function Topbar() {
 
   return (
     <header className={styles.topbar}>
-      {/* Logo Orbe */}
+      {/* Logo Coldwell Banker */}
       <div className={styles.brand} onClick={() => navigate('/')}>
-        <img src={orbeLogo} alt="Orbe" className={styles.brandLogo} />
+        <img src={cbLogo} alt="Coldwell Banker" className={styles.brandLogo} />
       </div>
 
       {/* Menú de navegación */}
