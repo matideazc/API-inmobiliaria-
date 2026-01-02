@@ -7,7 +7,7 @@ import { logger } from "../utils/logger";
 import { validateEmail } from "../utils/validation";
 import styles from "./Login.module.css";
 import orbeLogo from "../assets/images/orbe_sin_fondo_blanco.png";
-import coldwellLogo from "../assets/images/logo_coldwell_sin_fondo_2.png";
+import coldwellLogo from "../assets/images/logo_cb.png";
 
 interface LoginResponse {
   mensaje?: string;
@@ -117,7 +117,6 @@ const Login: React.FC = () => {
         </div>
 
         <div className={styles.footerLogo}>
-          <span>By:</span>
           <img src={coldwellLogo} alt="Coldwell Banker" />
         </div>
       </div>
