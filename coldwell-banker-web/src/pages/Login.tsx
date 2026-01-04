@@ -104,15 +104,15 @@ const Login: React.FC = () => {
         <div className={styles.benefits}>
           <div className={styles.benefitItem}>
             <CheckCircle className={styles.icon} size={24} />
-            <span>Administra propiedades</span>
+            <span>Simplificá tu día</span>
           </div>
           <div className={styles.benefitItem}>
             <CheckCircle className={styles.icon} size={24} />
-            <span>Aprueba mandatos</span>
+            <span>Movete más</span>
           </div>
           <div className={styles.benefitItem}>
             <CheckCircle className={styles.icon} size={24} />
-            <span>Centralizá documentación</span>
+            <span>Vendé mejor</span>
           </div>
         </div>
 
