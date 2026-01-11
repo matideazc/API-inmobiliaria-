@@ -9,10 +9,10 @@ import logoutIcon from '../assets/icons/cerrar-sesion.png';
 
 const Home = () => {
   const navigate = useNavigate();
-  const { user, clearAuth } = useAuth();
+  const { user, logout } = useAuth();
 
-  const handleLogout = () => {
-    clearAuth();
+  const handleLogout = async () => {
+    await logout();
     navigate('/login');
   };
 
