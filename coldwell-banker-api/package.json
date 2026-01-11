@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "prisma generate && tsc && copyfiles -u 1 src/templates/* dist",
-    "start": "node dist/server.js",
+    "start": "npm run migrate:deploy && node dist/server.js",
+    "migrate:deploy": "prisma migrate deploy",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
