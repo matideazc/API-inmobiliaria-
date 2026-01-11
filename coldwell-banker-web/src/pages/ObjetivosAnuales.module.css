@@ -1,0 +1,465 @@
+/* ObjetivosAnuales.module.css */
+
+.container {
+  min-height: 100vh;
+  width: 100%;
+  background: url('../assets/images/orbe_fondo_animado.png') center center / cover no-repeat;
+  color: white;
+  overflow-x: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar {
+  background: rgba(0, 21, 51, 0.98);
+  backdrop-filter: blur(10px);
+  height: 50px;
+  display: flex;
+  align-items: center;
+  padding: 0 2rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.navContent {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navLogo {
+  height: 32px;
+  filter: brightness(1.1);
+}
+
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00AEEF, #0088cc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 174, 239, 0.5);
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.userName {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+}
+
+.userRole {
+  font-size: 0.7rem;
+  color: #8a9fb8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.logoutBtn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoutBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.logoutIcon {
+  width: 20px;
+  height: 20px;
+  filter: invert(1) brightness(1.2);
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  padding-top: 90px;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.backBtn {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.backBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(-3px);
+}
+
+.card {
+  background: rgba(0, 21, 51, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cardHeader {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.cardTitle {
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: 0.5px;
+}
+
+.cardSubtitle {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.searchContainer {
+  position: relative;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+}
+
+.searchInput {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.8rem 1rem 0.8rem 3rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.searchInput::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #00AEEF;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.searchResults {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 600px;
+  margin-bottom: 2rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.objetivosTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.objetivosTable thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: linear-gradient(135deg, #00AEEF, #0088cc);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.objetivosTable th {
+  padding: 1rem;
+  text-align: center;
+  font-weight: 600;
+  color: white;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.objetivosTable tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background 0.2s;
+}
+
+.objetivosTable tbody tr:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.objetivosTable td {
+  padding: 0.75rem;
+  color: white;
+  text-align: center;
+}
+
+.stickyCol {
+  position: sticky;
+  left: 0;
+  background: rgba(0, 21, 51, 0.95);
+  z-index: 5;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.2);
+  min-width: 220px;
+  text-align: left !important;
+}
+
+.asesorInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.asesorInfo strong {
+  color: #00AEEF;
+  font-size: 0.95rem;
+}
+
+.asesorInfo small {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+}
+
+.inputObjetivo {
+  width: 90px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.inputObjetivo:focus {
+  outline: none;
+  border-color: #00AEEF;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.semanal {
+  margin-top: 0.25rem;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+}
+
+.emptyMessage {
+  text-align: center !important;
+  padding: 3rem !important;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.infoText {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.infoText strong {
+  color: #00AEEF;
+}
+
+.cambiosPendientes {
+  color: #FFCB00;
+  font-weight: 600;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.cancelBtn {
+  background: rgba(255, 88, 88, 0.2);
+  border: 1px solid #FF5858;
+  color: #FF5858;
+  font-weight: 600;
+  padding: 0.9rem 2rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.cancelBtn:hover {
+  background: rgba(255, 88, 88, 0.3);
+  transform: translateY(-2px);
+}
+
+.saveBtn {
+  background: linear-gradient(135deg, #28a745, #218838);
+  color: white;
+  font-weight: 700;
+  padding: 1rem 3rem;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: none;
+  cursor: pointer;
+}
+
+.saveBtn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #218838, #1e7e34);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.5);
+}
+
+.saveBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.saveBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .inputObjetivo {
+    width: 70px;
+    font-size: 0.85rem;
+  }
+  
+  .objetivosTable th {
+    font-size: 0.75rem;
+    padding: 0.75rem 0.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 1rem;
+  }
+  
+  .userDetails {
+    display: none;
+  }
+  
+  .main {
+    padding: 1.5rem 1rem;
+    padding-top: 80px;
+  }
+  
+  .card {
+    padding: 1.5rem;
+  }
+  
+  .cardTitle {
+    font-size: 1.4rem;
+  }
+  
+  .footer {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  
+  .saveBtn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .stickyCol {
+    min-width: 150px;
+  }
+  
+  .asesorInfo strong {
+    font-size: 0.85rem;
+  }
+  
+  .asesorInfo small {
+    font-size: 0.65rem;
+  }
+}

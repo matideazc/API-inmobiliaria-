@@ -4,9 +4,9 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Base de datos PostgreSQL para producción en Railway
+// Base de datos SQLite para desarrollo local
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -19,6 +19,8 @@ model Usuario {
   rol          Rol       @default(ASESOR)
   createdAt    DateTime  @default(now())
   expedientes  Expediente[] @relation("AsesorExpedientes")
+  actividadesSemanales ActividadSemanal[] @relation("AsesorActividades")
+  objetivosAnuales ObjetivoAnual[] @relation("AsesorObjetivos")
 }
 
 enum Rol {
@@ -113,3 +115,51 @@ model InformeIA {
   texto        String
   createdAt    DateTime   @default(now())
 }
+
+// ===== Actividades Semanales =====
+model ActividadSemanal {
+  id               Int            @id @default(autoincrement())
+  asesorId         Int
+  asesor           Usuario        @relation("AsesorActividades", fields: [asesorId], references: [id], onDelete: Cascade)
+  semanaInicio     DateTime       // Lunes de la semana (sin hora, solo fecha)
+  semanaFin        DateTime       // Domingo de la semana
+  tipoActividad    ActividadTipo
+  objetivo         Int            @default(0)  // Meta definida por la oficina
+  planificado      Int            @default(0)  // Lo que el asesor planea hacer
+  realizado        Int            @default(0)  // Lo que realmente hizo
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  // Índice único: un asesor solo puede tener un registro por tipo de actividad por semana
+  @@unique([asesorId, semanaInicio, tipoActividad])
+  @@index([asesorId, semanaInicio])
+}
+
+enum ActividadTipo {
+  CONTACTOS
+  REUNION_PRELISTING
+  REUNION_PREBUYING
+  ACM
+  CAPTACIONES
+  BUSQUEDAS
+  RESERVA_COMPRADOR
+  RESERVA_VENDEDOR
+  BAJA_PRECIO
+}
+
+// ===== Objetivos Anuales (configurados por el admin) =====
+model ObjetivoAnual {
+  id              Int            @id @default(autoincrement())
+  asesorId        Int
+  asesor          Usuario        @relation("AsesorObjetivos", fields: [asesorId], references: [id], onDelete: Cascade)
+  tipoActividad   ActividadTipo
+  objetivoAnual   Int            @default(0)  // Objetivo para todo el año
+  año             Int                         // Año fiscal (ej: 2026)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Un asesor solo puede tener un objetivo por actividad por año
+  @@unique([asesorId, tipoActividad, año])
+  @@index([asesorId, año])
+}
+

@@ -147,13 +147,9 @@ export const me = async (req: Request, res: Response) => {
       return;
     }
 
-    res.json({
-      usuario
-    });
+    res.json({ usuario });
   } catch (error) {
-    console.error('Error en /me:', error);
-    res.status(500).json({ 
-      error: 'Error interno del servidor' 
-    });
+    console.error('Error en getMe:', error);
+    res.status(500).json({ error: 'Error al obtener usuario' });
   }
 };

@@ -48,6 +48,8 @@ const PropiedadesList: React.FC = () => {
   const [filtroNombre, setFiltroNombre] = useState('');
   const [filtroPropietario, setFiltroPropietario] = useState('');
   const [filtroFecha, setFiltroFecha] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [filtroEstado, setFiltroEstado] = useState<'TODOS' | 'APROBADO' | 'RECHAZADO' | 'PENDIENTE'>('TODOS');
 
   useEffect(() => {
     loadPropiedades(page);
@@ -99,7 +101,7 @@ const PropiedadesList: React.FC = () => {
   useEffect(() => {
     aplicarFiltros();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [propiedades, filtroNombre, filtroPropietario, filtroFecha]);
+  }, [propiedades, filtroNombre, filtroPropietario, filtroFecha, filtroEstado]);
 
   // Función para formatear fecha automáticamente (dd/mm/yyyy)
   const formatDateInput = (value: string) => {
@@ -123,6 +125,11 @@ const PropiedadesList: React.FC = () => {
 
   const aplicarFiltros = () => {
     let resultado = [...propiedades];
+
+    // Filtro por estado
+    if (filtroEstado !== 'TODOS') {
+      resultado = resultado.filter(prop => prop.estado === filtroEstado);
+    }
 
     if (filtroNombre.trim()) {
       resultado = resultado.filter(prop =>
@@ -199,57 +206,95 @@ const PropiedadesList: React.FC = () => {
         </button>
       </div>
 
-      {/* Search Panel */}
+      {/* Search Panel - Collapsible */}
       <div className={styles.searchPanel}>
-        <div className={styles.searchHeader}>
-          <Search size={24} />
-          <h2 className={styles.searchTitle}>Buscar propiedades</h2>
-        </div>
-
-        <div className={styles.searchGrid}>
-          <div className={styles.searchField}>
-            <div className={styles.searchLabel}>
-              <HomeIcon size={20} className={styles.searchIcon} />
-              <span>Nombre de propiedad</span>
-            </div>
-            <input
-              type="text"
-              className={styles.searchInput}
-              placeholder="Ej: Casa Sargento Cabral, Depart..."
-              value={filtroNombre}
-              onChange={(e) => setFiltroNombre(e.target.value)}
-            />
+        <button 
+          className={styles.searchToggle}
+          onClick={() => setSearchOpen(!searchOpen)}
+        >
+          <div className={styles.searchHeader}>
+            <Search size={24} />
+            <h2 className={styles.searchTitle}>Buscar propiedades</h2>
           </div>
+          <span className={styles.toggleIcon}>{searchOpen ? '▼' : '▶'}</span>
+        </button>
 
-          <div className={styles.searchField}>
-            <div className={styles.searchLabel}>
-              <User size={20} className={styles.searchIcon} />
-              <span>Propietario</span>
+        {searchOpen && (
+          <div className={styles.searchContent}>
+            {/* Status Filter Buttons - INSIDE panel */}
+            <div className={styles.statusFilters}>
+              <button
+                className={`${styles.filterBtn} ${filtroEstado === 'TODOS' ? styles.filterBtnActive : ''}`}
+                onClick={() => setFiltroEstado('TODOS')}
+              >
+                Todas ({propiedades.length})
+              </button>
+              <button
+                className={`${styles.filterBtn} ${styles.filterBtnApproved} ${filtroEstado === 'APROBADO' ? styles.filterBtnActive : ''}`}
+                onClick={() => setFiltroEstado('APROBADO')}
+              >
+                ✓ Aprobadas ({propiedades.filter(p => p.estado === 'APROBADO').length})
+              </button>
+              <button
+                className={`${styles.filterBtn} ${styles.filterBtnPending} ${filtroEstado === 'PENDIENTE' ? styles.filterBtnActive : ''}`}
+                onClick={() => setFiltroEstado('PENDIENTE')}
+              >
+                ⏳ En espera ({propiedades.filter(p => p.estado === 'PENDIENTE').length})
+              </button>
+              <button
+                className={`${styles.filterBtn} ${styles.filterBtnRejected} ${filtroEstado === 'RECHAZADO' ? styles.filterBtnActive : ''}`}
+                onClick={() => setFiltroEstado('RECHAZADO')}
+              >
+                ✗ Rechazadas ({propiedades.filter(p => p.estado === 'RECHAZADO').length})
+              </button>
             </div>
-            <input
-              type="text"
-              className={styles.searchInput}
-              placeholder="Ej: Juan Pérez, Laura Mendoza..."
-              value={filtroPropietario}
-              onChange={(e) => setFiltroPropietario(e.target.value)}
-            />
-          </div>
 
-          <div className={styles.searchField}>
-            <div className={styles.searchLabel}>
-              <Calendar size={20} className={styles.searchIcon} />
-              <span>Fecha de creación</span>
+            <div className={styles.searchGrid}>
+              <div className={styles.searchField}>
+                <div className={styles.searchLabel}>
+                  <HomeIcon size={20} className={styles.searchIcon} />
+                  <span>Nombre de propiedad</span>
+                </div>
+                <input
+                  type="text"
+                  className={styles.searchInput}
+                  placeholder="Ej: Casa Sargento Cabral, Depart..."
+                  value={filtroNombre}
+                  onChange={(e) => setFiltroNombre(e.target.value)}
+                />
+              </div>
+
+              <div className={styles.searchField}>
+                <div className={styles.searchLabel}>
+                  <User size={20} className={styles.searchIcon} />
+                  <span>Propietario</span>
+                </div>
+                <input
+                  type="text"
+                  className={styles.searchInput}
+                  placeholder="Ej: Juan Pérez, Laura Mendoza..."
+                  value={filtroPropietario}
+                  onChange={(e) => setFiltroPropietario(e.target.value)}
+                />
+              </div>
+
+              <div className={styles.searchField}>
+                <div className={styles.searchLabel}>
+                  <Calendar size={20} className={styles.searchIcon} />
+                  <span>Fecha de creación</span>
+                </div>
+                <input
+                  type="text"
+                  className={styles.searchInput}
+                  placeholder="dd/mm/aaaa"
+                  value={filtroFecha}
+                  onChange={handleDateChange}
+                  maxLength={10}
+                />
+              </div>
             </div>
-            <input
-              type="text"
-              className={styles.searchInput}
-              placeholder="dd/mm/aaaa"
-              value={filtroFecha}
-              onChange={handleDateChange}
-              maxLength={10}
-            />
           </div>
-        </div>
+        )}
       </div>
 
       {/* Property Cards */}

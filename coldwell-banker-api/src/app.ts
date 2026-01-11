@@ -10,6 +10,9 @@ import authRoutes from './routes/auth.routes';
 import expedientesRoutes from './routes/expedientes.routes';
 import documentosRoutes from './routes/documentos.routes';
 import mandatosRoutes from './routes/mandatos.routes';
+import actividadesRoutes from './routes/actividades.routes';
+import actividadesAdminRoutes from './routes/actividades-admin.routes';
+import objetivosAnualesRoutes from './routes/objetivos-anuales.routes';
 
 const app: Application = express();
 
@@ -97,7 +100,10 @@ app.use('/auth', authRoutes);
 app.use('/expedientes', expedientesRoutes);
 app.use('/propiedades', expedientesRoutes); // Alias para compatibilidad con frontend mobile
 app.use('/documentos', documentosRoutes);
-app.use('/', mandatosRoutes); // Incluye rutas /expedientes/:id/mandato y /mandatos/:id/estado
+app.use('/', mandatosRoutes);
+app.use('/actividades-semanales', actividadesRoutes);
+app.use('/admin', actividadesAdminRoutes);
+app.use('/admin/objetivos-anuales', objetivosAnualesRoutes);
 
 // SEGURIDAD: Importar middlewares de manejo de errores
 import { notFoundHandler, errorHandler } from './middlewares/error-handler.middleware';

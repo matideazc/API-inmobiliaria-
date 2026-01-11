@@ -1,0 +1,499 @@
+/* ActividadesAdmin.module.css */
+
+.container {
+  min-height: 100vh;
+  width: 100%;
+  background: url('../assets/images/orbe_fondo_animado.png') center center / cover no-repeat;
+  color: white;
+  overflow-x: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar {
+  background: rgba(0, 21, 51, 0.98);
+  backdrop-filter: blur(10px);
+  height: 50px;
+  display: flex;
+  align-items: center;
+  padding: 0 2rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.navContent {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navLogo {
+  height: 32px;
+  filter: brightness(1.1);
+}
+
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00AEEF, #0088cc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 174, 239, 0.5);
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.userName {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+}
+
+.userRole {
+  font-size: 0.7rem;
+  color: #8a9fb8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.logoutBtn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoutBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.logoutIcon {
+  width: 20px;
+  height: 20px;
+  filter: invert(1) brightness(1.2);
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  padding-top: 90px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.backBtn {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 1.5rem;
+}
+
+.backBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(-3px);
+}
+
+.weekSelector {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  background: rgba(0, 21, 51, 0.7);
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.weekBtn {
+  background: linear-gradient(135deg, #00AEEF, #0088cc);
+  color: white;
+  border: none;
+  padding: 0.7rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.weekBtn:hover {
+  background: linear-gradient(135deg, #0088cc, #006aa8);
+  transform: scale(1.05);
+}
+
+.weekDisplay {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  min-width: 320px;
+  justify-content: center;
+}
+
+.filterContainer {
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(0, 21, 51, 0.7);
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+}
+
+.filterLabel {
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.filterSelect {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filterSelect:focus {
+  outline: none;
+  border-color: #00AEEF;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.filterSelect option {
+  background: #001533;
+  color: white;
+}
+
+.card {
+  background: rgba(0, 21, 51, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cardHeader {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.cardTitle {
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: 0.5px;
+}
+
+.cardSubtitle {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  margin-bottom: 2rem;
+}
+
+.activityTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.activityTable thead {
+  background: linear-gradient(135deg, #00AEEF, #0088cc);
+}
+
+.activityTable th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: white;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.activityTable tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background 0.2s;
+}
+
+.activityTable tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.activityTable td {
+  padding: 1rem;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.asesorName {
+  font-weight: 600;
+  color: #00AEEF;
+}
+
+.numberCell {
+  text-align: center;
+  font-weight: 500;
+}
+
+.percentCell {
+  text-align: center;
+}
+
+.emptyMessage {
+  text-align: center !important;
+  padding: 3rem !important;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+.percentCell :global(.cumplimientoGreen) {
+  color: #38CE77;
+  font-weight: 700;
+}
+
+.percentCell :global(.cumplimientoYellow) {
+  color: #FFCB00;
+  font-weight: 700;
+}
+
+.percentCell :global(.cumplimientoRed) {
+  color: #FF5858;
+  font-weight: 700;
+}
+
+/* ========== FILAS DE GRUPO POR ASESOR ========== */
+.advisorGroupRow {
+  background: rgba(0, 174, 239, 0.15) !important;
+  border-top: 2px solid rgba(0, 174, 239, 0.4) !important;
+  border-bottom: 2px solid rgba(0, 174, 239, 0.4) !important;
+  font-weight: 700 !important;
+}
+
+.advisorGroupRow:hover {
+  background: rgba(0, 174, 239, 0.2) !important;
+}
+
+.advisorGroupRow td {
+  padding: 1.1rem 1rem !important;
+  font-size: 1rem !important;
+}
+
+.advisorGroupName {
+  color: #00AEEF !important;
+  font-weight: 700 !important;
+  font-size: 1.05rem !important;
+  letter-spacing: 0.3px;
+}
+
+.advisorGroupCell {
+  font-weight: 600 !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Filas de detalle de actividades (dentro del grupo) */
+.activityDetailCell {
+  width: 30px;
+  background: rgba(255, 255, 255, 0.02);
+  border-right: 2px solid rgba(0, 174, 239, 0.3);
+}
+
+/* ========== FILA DE TOTALES ========== */
+.totalsRow {
+  background: rgba(0, 174, 239, 0.2) !important;
+  font-weight: 700 !important;
+  border-top: 2px solid rgba(0, 174, 239, 0.5) !important;
+}
+
+.totalsRow td {
+  padding: 1.2rem 1rem !important;
+  font-size: 1.05rem !important;
+}
+
+.exportBtn {
+  background: linear-gradient(135deg, #28a745, #218838);
+  color: white;
+  font-weight: 700;
+  padding: 1rem 3rem;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 auto;
+  border: none;
+  cursor: pointer;
+}
+
+.exportBtn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #218838, #1e7e34);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.5);
+}
+
+.exportBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.exportBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.footer {
+  position: absolute;
+  bottom: 5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.9;
+}
+
+.footerLogo {
+  height: 70px;
+  filter: brightness(1.1);
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 1rem;
+    height: 60px;
+  }
+
+  .navLogo {
+    height: 28px;
+  }
+
+  .userDetails {
+    display: none;
+  }
+
+  .main {
+    padding: 1.5rem 1rem;
+    padding-top: 80px;
+  }
+
+  .weekSelector {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .weekDisplay {
+    font-size: 0.95rem;
+    min-width: auto;
+  }
+
+  .filterContainer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .card {
+    padding: 1.5rem;
+  }
+
+  .cardTitle {
+    font-size: 1.4rem;
+  }
+
+  .cardSubtitle {
+    font-size: 0.9rem;
+  }
+
+  .activityTable th,
+  .activityTable td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .exportBtn {
+    padding: 0.9rem 2rem;
+    font-size: 1rem;
+    width: 100%;
+  }
+
+  .footer {
+    bottom: 1rem;
+  }
+
+  .footerLogo {
+    height: 55px;
+  }
+}
