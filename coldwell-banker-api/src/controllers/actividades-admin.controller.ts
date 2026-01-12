@@ -67,17 +67,35 @@ export const obtenerActividadesSemanaAdmin = async (req: Request, res: Response)
       ],
     });
 
-    // Formatear respuesta
-    const resultado = actividades.map((act) => ({
-      asesorId: act.asesorId,
-      asesor: act.asesor,
-      tipoActividad: act.tipoActividad,
-      objetivo: act.objetivo,
-      planificado: act.planificado,
-      realizado: act.realizado,
-      semanaInicio: act.semanaInicio,
-      semanaFin: act.semanaFin,
-    }));
+    // Obtener objetivos configurados para el año
+    const año = semanaInicio.getFullYear();
+    const objetivosConfig = await prisma.objetivoConfiguracion.findMany({
+      where: { año },
+    });
+
+    // Crear mapa de objetivos por asesor y tipo
+    const objetivoMap = new Map<string, number>();
+    objetivosConfig.forEach((obj) => {
+      const key = `${obj.asesorId}-${obj.tipoActividad}`;
+      objetivoMap.set(key, obj.objetivoSemanal);
+    });
+
+    // Formatear respuesta con objetivo desde configuración
+    const resultado = actividades.map((act) => {
+      const key = `${act.asesorId}-${act.tipoActividad}`;
+      const objetivo = objetivoMap.get(key) ?? 0;
+      
+      return {
+        asesorId: act.asesorId,
+        asesor: act.asesor,
+        tipoActividad: act.tipoActividad,
+        objetivo, // <-- Desde ObjetivoConfiguracion, no desde ActividadSemanal
+        planificado: act.planificado,
+        realizado: act.realizado,
+        semanaInicio: act.semanaInicio,
+        semanaFin: act.semanaFin,
+      };
+    });
 
     res.json(resultado);
   } catch (error) {
