@@ -237,7 +237,7 @@ export const guardarObjetivosAnuales = async (data: {
   objetivos: Array<{
     asesorId: number;
     tipoActividad: string;
-    objetivoAnual: number;
+    objetivoSemanal: number;
   }>;
 }) => {
   const response = await api.put('/admin/objetivos-anuales', data);

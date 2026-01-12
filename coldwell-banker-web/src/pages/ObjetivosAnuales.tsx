@@ -96,7 +96,7 @@ export const ObjetivosAnuales: React.FC = () => {
         ACTIVIDADES.map((act) => ({
           asesorId: asesor.asesorId,
           tipoActividad: act.key,
-          objetivoAnual: asesor.objetivos[act.key] || 0,
+          objetivoSemanal: asesor.objetivos[act.key] || 0,
         }))
       );
 
@@ -105,7 +105,7 @@ export const ObjetivosAnuales: React.FC = () => {
         objetivos: objetivosParaGuardar,
       });
 
-      alert(`✅ Objetivos ${añoActual} guardados correctamente`);
+      alert(`✅ Objetivos guardados correctamente`);
       setObjetivosEditados(new Map());
     } catch (error) {
       console.error('Error al guardar:', error);
@@ -152,9 +152,9 @@ export const ObjetivosAnuales: React.FC = () => {
 
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <h1 className={styles.cardTitle}>Objetivos Anuales {añoActual}</h1>
+            <h1 className={styles.cardTitle}>Objetivos Semanales</h1>
             <p className={styles.cardSubtitle}>
-              Configura los objetivos anuales de cada asesor. Los objetivos semanales se calculan automáticamente (anual ÷ 52).
+              Configura los objetivos semanales de cada asesor. Ejemplo: 5 contactos por semana.
             </p>
           </div>
 
@@ -213,16 +213,13 @@ export const ObjetivosAnuales: React.FC = () => {
                               <input
                                 type="number"
                                 min="0"
-                                max="99999"
+                                max="999"
                                 value={asesor.objetivos[act.key] || 0}
                                 onChange={(e) =>
                                   handleObjetivoChange(asesor.asesorId, act.key, e.target.value)
                                 }
                                 className={styles.inputObjetivo}
                               />
-                              <div className={styles.semanal}>
-                                ≈ {Math.round((asesor.objetivos[act.key] || 0) / 52)}/sem
-                              </div>
                             </td>
                           ))}
                         </tr>

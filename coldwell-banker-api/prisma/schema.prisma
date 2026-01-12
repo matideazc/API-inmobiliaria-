@@ -13,15 +13,15 @@ datasource db {
 
 // ===== Usuarios del sistema =====
 model Usuario {
-  id           Int       @id @default(autoincrement())
-  nombre       String
-  email        String    @unique
-  hash         String    // password hasheada
-  rol          Rol       @default(ASESOR)
-  createdAt    DateTime  @default(now())
-  expedientes  Expediente[] @relation("AsesorExpedientes")
-  actividadesSemanales ActividadSemanal[] @relation("AsesorActividades")
-  objetivosAnuales ObjetivoAnual[] @relation("AsesorObjetivos")
+  id                   Int                     @id @default(autoincrement())
+  nombre               String
+  email                String                  @unique
+  hash                 String // password hasheada
+  rol                  Rol                     @default(ASESOR)
+  createdAt            DateTime                @default(now())
+  expedientes          Expediente[]            @relation("AsesorExpedientes")
+  actividadesSemanales ActividadSemanal[]      @relation("AsesorActividades")
+  objetivosConfig      ObjetivoConfiguracion[] @relation("AsesorObjetivosConfiguracion")
 }
 
 enum Rol {
@@ -32,27 +32,27 @@ enum Rol {
 
 // ===== Expedientes =====
 model Expediente {
-  id                   Int        @id @default(autoincrement())
-  titulo               String     // título o referencia del expediente (nombre de la propiedad)
-  tipoPropiedad        String?    // tipo de propiedad (casa, departamento, terreno, etc.)
-  descripcion          String?    // descripción opcional
-  propietarioNombre    String?    // DEPRECATED: ahora se usa el array propietarios
-  direccion            String?    // dirección de la propiedad
-  api                  String?    // número de API de la propiedad
-  partidaInmobiliaria  String?    // número de partida inmobiliaria
-  localidad            String?    // localidad / provincia / CP
-  emails               String?    // emails relacionados con la propiedad (separados por coma)
-  propietarios         String?    // JSON array de objetos propietario (nombreCompleto, dni, fechaNacimiento, etc.)
-  asesor               Usuario    @relation("AsesorExpedientes", fields: [asesorId], references: [id])
-  asesorId             Int
-  estado               Estado     @default(PENDIENTE)
-  comentariosRevisor   String?
-  observaciones        String?    // observaciones del revisor al cambiar el estado
-  createdAt            DateTime   @default(now())
-  updatedAt            DateTime   @updatedAt
-  documentos           Documento[]
-  mandato              Mandato?
-  informe              InformeIA?
+  id                  Int         @id @default(autoincrement())
+  titulo              String // título o referencia del expediente (nombre de la propiedad)
+  tipoPropiedad       String? // tipo de propiedad (casa, departamento, terreno, etc.)
+  descripcion         String? // descripción opcional
+  propietarioNombre   String? // DEPRECATED: ahora se usa el array propietarios
+  direccion           String? // dirección de la propiedad
+  api                 String? // número de API de la propiedad
+  partidaInmobiliaria String? // número de partida inmobiliaria
+  localidad           String? // localidad / provincia / CP
+  emails              String? // emails relacionados con la propiedad (separados por coma)
+  propietarios        String? // JSON array de objetos propietario (nombreCompleto, dni, fechaNacimiento, etc.)
+  asesor              Usuario     @relation("AsesorExpedientes", fields: [asesorId], references: [id])
+  asesorId            Int
+  estado              Estado      @default(PENDIENTE)
+  comentariosRevisor  String?
+  observaciones       String? // observaciones del revisor al cambiar el estado
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  documentos          Documento[]
+  mandato             Mandato?
+  informe             InformeIA?
 }
 
 enum Estado {
@@ -67,8 +67,8 @@ model Documento {
   expediente   Expediente @relation(fields: [expedienteId], references: [id], onDelete: Cascade)
   expedienteId Int
   tipo         DocTipo
-  nombre       String?    // nombre opcional del documento
-  rutaArchivo  String     // acá va el path o la URL del PDF/foto
+  nombre       String? // nombre opcional del documento
+  rutaArchivo  String // acá va el path o la URL del PDF/foto
   createdAt    DateTime   @default(now())
 }
 
@@ -81,31 +81,31 @@ enum DocTipo {
   MENSURA
   TASA
   OTRO
-  PDF_COMPLETO  // PDF único con toda la info de la propiedad
+  PDF_COMPLETO // PDF único con toda la info de la propiedad
 }
 
 // ===== Mandato que se genera solo si el expediente está aprobado =====
 model Mandato {
-  id            Int            @id @default(autoincrement())
-  expediente    Expediente     @relation(fields: [expedienteId], references: [id], onDelete: Cascade)
-  expedienteId  Int            @unique  // Un expediente solo puede tener un mandato
-  plazoDias     Int                     // Plazo en días
-  monto         Float                   // Monto del mandato
-  moneda        String         @default("ARS") // Moneda del monto (ARS o USD)
-  estado        MandatoEstado  @default(BORRADOR)
-  observaciones String?                 // Observaciones opcionales
-  firmadoPor    String?                 // Nombre o email de quien firmó
-  firmadoFecha  DateTime?               // Cuándo se firmó
-  documentoUrl  String?                 // Link al PDF firmado o generado
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id            Int           @id @default(autoincrement())
+  expediente    Expediente    @relation(fields: [expedienteId], references: [id], onDelete: Cascade)
+  expedienteId  Int           @unique // Un expediente solo puede tener un mandato
+  plazoDias     Int // Plazo en días
+  monto         Float // Monto del mandato
+  moneda        String        @default("ARS") // Moneda del monto (ARS o USD)
+  estado        MandatoEstado @default(BORRADOR)
+  observaciones String? // Observaciones opcionales
+  firmadoPor    String? // Nombre o email de quien firmó
+  firmadoFecha  DateTime? // Cuándo se firmó
+  documentoUrl  String? // Link al PDF firmado o generado
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 enum MandatoEstado {
-  BORRADOR     // Se acaba de generar
-  ENVIADO      // Se envió al propietario para firmar
-  FIRMADO      // Ya está firmado
-  ANULADO      // Fue anulado
+  BORRADOR // Se acaba de generar
+  ENVIADO // Se envió al propietario para firmar
+  FIRMADO // Ya está firmado
+  ANULADO // Fue anulado
 }
 
 // ===== Informe de IA (opcional, pero lo dejamos listo) =====
@@ -119,17 +119,17 @@ model InformeIA {
 
 // ===== Actividades Semanales =====
 model ActividadSemanal {
-  id               Int            @id @default(autoincrement())
-  asesorId         Int
-  asesor           Usuario        @relation("AsesorActividades", fields: [asesorId], references: [id], onDelete: Cascade)
-  semanaInicio     DateTime       // Lunes de la semana (sin hora, solo fecha)
-  semanaFin        DateTime       // Domingo de la semana
-  tipoActividad    ActividadTipo
-  objetivo         Int            @default(0)  // Meta definida por la oficina
-  planificado      Int            @default(0)  // Lo que el asesor planea hacer
-  realizado        Int            @default(0)  // Lo que realmente hizo
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  id            Int           @id @default(autoincrement())
+  asesorId      Int
+  asesor        Usuario       @relation("AsesorActividades", fields: [asesorId], references: [id], onDelete: Cascade)
+  semanaInicio  DateTime // Lunes de la semana (sin hora, solo fecha)
+  semanaFin     DateTime // Domingo de la semana
+  tipoActividad ActividadTipo
+  objetivo      Int           @default(0) // Meta definida por la oficina
+  planificado   Int           @default(0) // Lo que el asesor planea hacer
+  realizado     Int           @default(0) // Lo que realmente hizo
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   // Índice único: un asesor solo puede tener un registro por tipo de actividad por semana
   @@unique([asesorId, semanaInicio, tipoActividad])
@@ -148,19 +148,20 @@ enum ActividadTipo {
   BAJA_PRECIO
 }
 
-// ===== Objetivos Anuales (configurados por el admin) =====
-model ObjetivoAnual {
-  id              Int            @id @default(autoincrement())
+// ===== Configuración de Objetivos Semanales =====
+// Los admin configuran objetivos SEMANALES para cada asesor
+// Ejemplo: 5 contactos por semana, 2 prelisting por semana, etc.
+model ObjetivoConfiguracion {
+  id              Int           @id @default(autoincrement())
   asesorId        Int
-  asesor          Usuario        @relation("AsesorObjetivos", fields: [asesorId], references: [id], onDelete: Cascade)
   tipoActividad   ActividadTipo
-  objetivoAnual   Int            @default(0)  // Objetivo para todo el año
-  año             Int                         // Año fiscal (ej: 2026)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  año            Int // Para filtrar configuraciones por año
+  objetivoSemanal Int // Objetivo por semana (configurado por admin)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
-  // Un asesor solo puede tener un objetivo por actividad por año
+  asesor Usuario @relation("AsesorObjetivosConfiguracion", fields: [asesorId], references: [id])
+
   @@unique([asesorId, tipoActividad, año])
-  @@index([asesorId, año])
+  @@map("objetivo_configuracion") // Mantener nombre de tabla en DB por compatibilidad
 }
-

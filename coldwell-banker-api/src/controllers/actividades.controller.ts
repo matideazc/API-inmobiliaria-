@@ -56,19 +56,19 @@ export const obtenerActividadesSemana = async (req: Request, res: Response): Pro
       },
     });
 
-    // 2. NUEVO: Obtener objetivos anuales del asesor para calcular objetivos semanales
+    // 2. NUEVO: Obtener objetivos semanales del asesor
     const año = semanaInicio.getFullYear();
-    const objetivosAnuales = await prisma.objetivoAnual.findMany({
+    const objetivosConfig = await prisma.objetivoConfiguracion.findMany({
       where: {
         asesorId,
         año,
       },
     });
 
-    // Crear mapa de objetivos semanales (anual / 52)
+    // Crear mapa de objetivos semanales (directo desde configuración)
     const objetivosPorTipo: Record<string, number> = {};
-    objetivosAnuales.forEach(obj => {
-      objetivosPorTipo[obj.tipoActividad] = Math.round(obj.objetivoAnual / 52);
+    objetivosConfig.forEach(obj => {
+      objetivosPorTipo[obj.tipoActividad] = obj.objetivoSemanal; // Directo!
     });
 
     // 3. En memoria, armar las 9 filas y completar con 0 lo que falta

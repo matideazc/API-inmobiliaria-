@@ -47,16 +47,15 @@ export const obtenerObjetivosAnuales = async (req: Request, res: Response): Prom
       orderBy: { nombre: 'asc' },
     });
 
-    // 2. Obtener todos los objetivos anuales del año
-    const objetivos = await prisma.objetivoAnual.findMany({
+    // 2. Obtener todas las configuraciones de objetivos semanales del año
+    const objetivos = await prisma.objetivoConfiguracion.findMany({
       where: { año: añoNum },
     });
 
-    // 3. Crear mapa de objetivos por asesor y tipo de actividad
     const objetivoMap = new Map<string, number>();
     objetivos.forEach((obj) => {
       const key = `${obj.asesorId}-${obj.tipoActividad}`;
-      objetivoMap.set(key, obj.objetivoAnual);
+      objetivoMap.set(key, obj.objetivoSemanal); // Objetivo semanal directo
     });
 
     // 4. Formatear respuesta: array de asesores con sus objetivos
@@ -109,23 +108,23 @@ export const guardarObjetivosAnuales = async (req: Request, res: Response): Prom
 
     // Validar y procesar cada objetivo
     const promises = objetivos.map((obj: any) => {
-      const { asesorId, tipoActividad, objetivoAnual } = obj;
+      const { asesorId, tipoActividad, objetivoSemanal } = obj;
 
       // Validaciones
-      if (!asesorId || !tipoActividad || objetivoAnual === undefined) {
-        throw new Error('Cada objetivo debe tener asesorId, tipoActividad y objetivoAnual');
+      if (!asesorId || !tipoActividad || objetivoSemanal === undefined) {
+        throw new Error('Cada objetivo debe tener asesorId, tipoActividad y objetivoSemanal');
       }
 
       if (!TIPOS_ACTIVIDAD.includes(tipoActividad)) {
         throw new Error(`Tipo de actividad inválido: ${tipoActividad}`);
       }
 
-      if (typeof objetivoAnual !== 'number' || objetivoAnual < 0) {
-        throw new Error('objetivoAnual debe ser un número positivo');
+      if (typeof objetivoSemanal !== 'number' || objetivoSemanal < 0) {
+        throw new Error('objetivoSemanal debe ser un número positivo');
       }
 
       // Upsert: crear o actualizar
-      return prisma.objetivoAnual.upsert({
+      return prisma.objetivoConfiguracion.upsert({
         where: {
           asesorId_tipoActividad_año: {
             asesorId,
@@ -134,13 +133,13 @@ export const guardarObjetivosAnuales = async (req: Request, res: Response): Prom
           },
         },
         update: {
-          objetivoAnual,
+          objetivoSemanal,
         },
         create: {
           asesorId,
           tipoActividad,
           año,
-          objetivoAnual,
+          objetivoSemanal,
         },
       });
     });
