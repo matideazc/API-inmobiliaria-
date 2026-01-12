@@ -179,6 +179,19 @@ export const exportarActividadesExcel = async (req: Request, res: Response): Pro
       ],
     });
 
+    // Obtener objetivos configurados para el año
+    const año = semanaInicio.getFullYear();
+    const objetivosConfig = await prisma.objetivoConfiguracion.findMany({
+      where: { año },
+    });
+
+    // Crear mapa de objetivos por asesor y tipo
+    const objetivoMap = new Map<string, number>();
+    objetivosConfig.forEach((obj) => {
+      const key = `${obj.asesorId}-${obj.tipoActividad}`;
+      objetivoMap.set(key, obj.objetivoSemanal);
+    });
+
     // Crear workbook con exceljs
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Actividades');
@@ -245,18 +258,22 @@ export const exportarActividadesExcel = async (req: Request, res: Response): Pro
 
       // Agregar actividades del asesor
       acts.forEach((act: any, index: number) => {
-        const porcentaje = act.objetivo > 0  
-          ? Math.round((act.realizado / act.objetivo) * 100) 
+        // Obtener objetivo desde configuración
+        const key = `${act.asesorId}-${act.tipoActividad}`;
+        const objetivo = objetivoMap.get(key) ?? 0;
+        
+        const porcentaje = objetivo > 0  
+          ? Math.round((act.realizado / objetivo) * 100) 
           : 0;
 
-        totalObjetivo += act.objetivo;
+        totalObjetivo += objetivo;
         totalPlanificado += act.planificado;
         totalRealizado += act.realizado;
 
         const row = worksheet.addRow({
           asesor: nombre,
           actividad: ACTIVIDAD_NOMBRES[act.tipoActividad] || act.tipoActividad,
-          objetivo: act.objetivo,
+          objetivo, // <-- Desde ObjetivoConfiguracion
           planificado: act.planificado,
           realizado: act.realizado,
           porcentaje: porcentaje,
