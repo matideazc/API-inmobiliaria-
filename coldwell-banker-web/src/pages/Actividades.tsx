@@ -215,9 +215,9 @@ const Actividades = () => {
                               ✓ {cumplidos} cumplidos
                             </span>
                             {pendientes > 0 && (
-                              <span className={styles.summaryBadge} style={{background: 'rgba(255, 203, 0, 0.2)', color: '#FFCB00'}}>
-                                ⚠ {pendientes} pendientes
-                              </span>
+                               <span className={styles.summaryBadge} style={{background: 'rgba(255, 203, 0, 0.2)', color: '#FFCB00'}}>
+                                 ⚠ {pendientes} no cumplidos
+                               </span>
                             )}
                           </>
                         );
@@ -287,7 +287,7 @@ const Actividades = () => {
                       if (pendientes.length > 0) {
                         return (
                           <div className={styles.insightsGroup}>
-                            <h4 className={styles.groupTitle}>⚠️ Objetivos Pendientes</h4>
+                            <h4 className={styles.groupTitle}>⚠️ Objetivos No Cumplidos</h4>
                             {pendientes.map((act) => {
                               const porcentaje = Math.round((act.realizado / act.objetivo) * 100);
                               const diferencia = act.objetivo - act.realizado;
@@ -387,11 +387,11 @@ const Actividades = () => {
                 </table>
               </div>
 
-              {/* Resumen */}
               <div className={styles.summary}>
-                Esta semana tienes objetivo <strong>{totales.objetivo}</strong>, planificaste{' '}
-                <strong>{totales.planificado}</strong> y realizaste <strong>{totales.realizado}</strong>{' '}
-                ({porcentajeCumplimiento}% de cumplimiento)
+                Esta semana tenías como objetivo <strong>{totales.objetivo}</strong> actividades, planificaste{' '}
+                <strong>{totales.planificado}</strong> y realizaste <strong>{totales.realizado}</strong>.<br/>
+                Cumpliste <strong>{Math.round((totales.realizado / totales.objetivo) * 100) || 0}%</strong> de tus objetivos y{' '}
+                <strong>{porcentajeCumplimiento}%</strong> de tu planificación.
               </div>
 
               {/* Botón guardar */}
