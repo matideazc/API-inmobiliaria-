@@ -18,17 +18,18 @@ router.get('/', autenticar, esAdmin, obtenerUsuarios);
 router.post('/', autenticar, esAdmin, crearUsuario);
 
 /**
+ * GET /usuarios/:id/password
+ * Obtener contraseña de un usuario (solo ADMIN)
+ * IMPORTANTE: Esta ruta debe estar ANTES de PUT y DELETE
+ */
+router.get('/:id/password', autenticar, esAdmin, obtenerPassword);
+
+/**
  * PUT /usuarios/:id/password
  * Cambiar contraseña de un usuario (solo ADMIN)
  * Body: { nuevaPassword }
  */
 router.put('/:id/password', autenticar, esAdmin, cambiarPassword);
-
-/**
- * GET /usuarios/:id/password
- * Obtener contraseña de un usuario (solo ADMIN)
- */
-router.get('/:id/password', autenticar, esAdmin, obtenerPassword);
 
 /**
  * DELETE /usuarios/:id
