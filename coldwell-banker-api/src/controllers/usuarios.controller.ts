@@ -39,6 +39,7 @@ try {
         nombre,
         email,
         hash,
+        password, // ⚠️ Guardar password en texto plano para que ADMIN pueda verla
         rol: rol || 'ASESOR' // Por defecto ASESOR si no se especifica
     },
     select: {
@@ -191,7 +192,10 @@ export const cambiarPassword = async (req: Request, res: Response) => {
     // Actualizar la contraseña
     await prisma.usuario.update({
       where: { id: userId },
-      data: { hash: nuevoHash }
+      data: { 
+        hash: nuevoHash,
+        password: nuevaPassword // ⚠️ Actualizar password en texto plano
+      }
     });
 
     res.json({
@@ -199,6 +203,63 @@ export const cambiarPassword = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error al cambiar contraseña:', error);
+    res.status(500).json({ 
+      error: 'Error interno del servidor' 
+    });
+  }
+};
+
+/**
+ * GET /usuarios/:id/password
+ * Obtiene la contraseña de un usuario (solo ADMIN)
+ */
+export const obtenerPassword = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = parseInt(id);
+
+    // Validar ID
+    if (isNaN(userId)) {
+      res.status(400).json({ 
+        error: 'ID de usuario inválido' 
+      });
+      return;
+    }
+
+    // Buscar usuario
+    const usuario = await prisma.usuario.findUnique({
+      where: { id: userId },
+      select: { 
+        password: true, 
+        nombre: true,
+        email: true
+      }
+    });
+
+    if (!usuario) {
+      res.status(404).json({ 
+        error: 'Usuario no encontrado' 
+      });
+      return;
+    }
+
+    // Si no tiene password guardada (usuarios antiguos)
+    if (!usuario.password) {
+      res.status(404).json({ 
+        error: 'Contraseña no disponible. Este usuario fue creado antes de habilitar esta funcionalidad.' 
+      });
+      return;
+    }
+
+    res.json({
+      password: usuario.password,
+      usuario: {
+        nombre: usuario.nombre,
+        email: usuario.email
+      }
+    });
+  } catch (error) {
+    console.error('Error al obtener contraseña:', error);
     res.status(500).json({ 
       error: 'Error interno del servidor' 
     });

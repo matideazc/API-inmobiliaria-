@@ -124,6 +124,25 @@
   transform: scale(1.05);
 }
 
+.btnViewPassword {
+  background: rgba(0, 174, 239, 0.1);
+  border: 1px solid rgba(0, 174, 239, 0.3);
+  color: #00AEEF;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnViewPassword:hover {
+  background: rgba(0, 174, 239, 0.2);
+  border-color: #00AEEF;
+  transform: scale(1.05);
+}
+
 .passwordDisplay {
   margin: 1.5rem 0;
 }

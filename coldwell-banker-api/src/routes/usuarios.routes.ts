@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { crearUsuario, obtenerUsuarios, eliminarUsuario, cambiarPassword } from '../controllers/usuarios.controller';
+import { crearUsuario, obtenerUsuarios, eliminarUsuario, cambiarPassword, obtenerPassword } from '../controllers/usuarios.controller';
 import { autenticar, esAdmin } from '../middlewares/auth.middleware';
 
 const router = Router();
@@ -23,6 +23,12 @@ router.post('/', autenticar, esAdmin, crearUsuario);
  * Body: { nuevaPassword }
  */
 router.put('/:id/password', autenticar, esAdmin, cambiarPassword);
+
+/**
+ * GET /usuarios/:id/password
+ * Obtener contraseña de un usuario (solo ADMIN)
+ */
+router.get('/:id/password', autenticar, esAdmin, obtenerPassword);
 
 /**
  * DELETE /usuarios/:id

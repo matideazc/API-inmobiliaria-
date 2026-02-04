@@ -17,12 +17,14 @@ model Usuario {
   nombre               String
   email                String                  @unique
   hash                 String // password hasheada
+  password             String? // ⚠️ Password en texto plano (para que ADMIN pueda verla)
   rol                  Rol                     @default(ASESOR)
   createdAt            DateTime                @default(now())
   expedientes          Expediente[]            @relation("AsesorExpedientes")
   actividadesSemanales ActividadSemanal[]      @relation("AsesorActividades")
   objetivosConfig      ObjetivoConfiguracion[] @relation("AsesorObjetivosConfiguracion")
 }
+
 
 enum Rol {
   ASESOR

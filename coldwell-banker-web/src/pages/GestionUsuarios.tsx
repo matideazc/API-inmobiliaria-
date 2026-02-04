@@ -118,6 +118,19 @@ const GestionUsuarios = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const verPassword = async (usuario: Usuario) => {
+    setError('');
+    try {
+      const res = await api.get(`/usuarios/${usuario.id}/password`);
+      setPasswordGenerada(res.data.password);
+      setUsuarioACambiarPassword(usuario);
+      setShowPasswordSuccessModal(true);
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Error al obtener contraseña');
+      setTimeout(() => setError(''), 5000);
+    }
+  };
+
   const confirmarEliminacion = async () => {
     if (!usuarioAEliminar) return;
 
@@ -300,6 +313,13 @@ const GestionUsuarios = () => {
                       title="Cambiar contraseña"
                     >
                       <Key size={18} />
+                    </button>
+                    <button
+                      className={styles.btnViewPassword}
+                      onClick={() => verPassword(usuario)}
+                      title="Ver contraseña"
+                    >
+                      <Eye size={18} />
                     </button>
                     <button
                       className={styles.btnDelete}
