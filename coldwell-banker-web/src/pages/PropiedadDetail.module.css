@@ -911,3 +911,147 @@
   }
 }
 
+
+/* ========== OBSERVACIONES DEL REVISOR ========== */
+.observacionesSection {
+  background: rgba(255, 193, 7, 0.1);
+  border-left: 4px solid #ffc107;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.observacionesHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.observacionesIcon {
+  font-size: 1.5rem;
+}
+
+.observacionesTexto {
+  color: #fff;
+  line-height: 1.8;
+  margin: 0;
+  font-size: 1rem;
+  white-space: pre-wrap;
+}
+
+.nuevaBadge {
+  background: linear-gradient(135deg, #ff4757, #ff6348);
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: auto;
+  box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
+  animation: pulseNew 2s infinite;
+}
+
+@keyframes pulseNew {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* ========== DELETE BUTTON ========== */
+.deleteButton {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border: 2px solid #dc2626;
+  color: white;
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 3px 10px rgba(239, 68, 68, 0.3);
+}
+
+.deleteButton:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(239, 68, 68, 0.5);
+}
+
+/* ========== DELETE MODAL ========== */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: linear-gradient(135deg, #1f2937, #111827);
+  padding: 2.5rem;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modalContent h2 {
+  color: #fbbf24;
+  margin-bottom: 1rem;
+}
+
+.modalContent p {
+  color: #d1d5db;
+  margin-bottom: 1.5rem;
+}
+
+.modalActions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.cancelButton {
+  flex: 1;
+  background: #4b5563;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.cancelButton:hover {
+  background: #6b7280;
+}
+
+.confirmDelete {
+  flex: 1;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.confirmDelete:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.confirmDelete:disabled,
+.cancelButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

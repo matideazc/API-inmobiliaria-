@@ -54,6 +54,7 @@ interface Propiedad {
   propietarios?: string | null;
   estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
   observaciones: string | null;
+  observacionesVistas: boolean;
   createdAt: string;
   asesor?: Asesor;
   documentos?: Documento[];
@@ -70,6 +71,8 @@ const PropiedadDetail = () => {
   const [downloadError, setDownloadError] = useState('');
   const [downloadingWord, setDownloadingWord] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   
   const [propietariosList, setPropietariosList] = useState<PropietarioDetalle[]>([]);
 
@@ -123,6 +126,25 @@ const PropiedadDetail = () => {
       }
     }
   }, [propiedad]);
+
+  // Auto-marcar observaciones como vistas si es asesor y hay observaciones nuevas
+  useEffect(() => {
+    if (propiedad && 
+        propiedad.estado === 'RECHAZADO' && 
+        propiedad.observaciones && 
+        !propiedad.observacionesVistas && 
+        user?.rol === 'ASESOR') {
+      api.put(`/expedientes/${id}/observaciones-vistas`)
+        .then(() => {
+          // Actualizar estado local para quitar badge "NUEVA"
+          setPropiedad({ ...propiedad, observacionesVistas: true });
+        })
+        .catch(() => {
+          // Solo loggear mensaje, no objeto completo (puede contener headers/tokens)
+          console.error('Error marking observations');
+        });
+    }
+  }, [propiedad?.id, propiedad?.observacionesVistas]);
 
   useEffect(() => {
     if (location.state?.refetch) {
@@ -190,6 +212,18 @@ const PropiedadDetail = () => {
     setTimeout(() => setSuccessMessage(''), 3000);
   };
 
+  const handleEliminar = async () => {
+    try {
+      setDeleting(true);
+      await api.delete(`/expedientes/${id}`);
+      navigate('/propiedades');
+    } catch (err: any) {
+      setError(err?.response?.data?.error || 'Error al eliminar la propiedad');
+      setDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.container}>
@@ -247,6 +281,14 @@ const PropiedadDetail = () => {
               className={styles.editButton}
             >
               ✏️ Editar Propiedad
+            </button>
+          )}
+          {user?.rol === 'ADMIN' && (
+            <button 
+              onClick={() => setShowDeleteModal(true)} 
+              className={styles.deleteButton}
+            >
+              🗑️ Eliminar Propiedad
             </button>
           )}
         </div>
@@ -312,6 +354,22 @@ const PropiedadDetail = () => {
               </div>
             </div>
           </div>
+
+          {/* ⚠️ Observaciones del Revisor */}
+          {propiedad.estado === 'RECHAZADO' && propiedad.observaciones && (
+            <div className={styles.observacionesSection}>
+              <div className={styles.observacionesHeader}>
+                <span className={styles.observacionesIcon}>⚠️</span>
+                <h3 className={styles.sectionTitle}>Observaciones del Revisor</h3>
+                {!propiedad.observacionesVistas && (
+                  <span className={styles.nuevaBadge}>NUEVA</span>
+                )}
+              </div>
+              <p className={styles.observacionesTexto}>
+                {propiedad.observaciones}
+              </p>
+            </div>
+          )}
 
           {/* 👤 Datos del Propietario */}
           {propietariosList.length > 0 && (
@@ -523,6 +581,33 @@ const PropiedadDetail = () => {
             onClose={() => setShowModal(false)}
             onSuccess={handleStatusChange}
           />
+        )}
+
+        {/* Modal de confirmación para eliminar */}
+        {showDeleteModal && (
+          <div className={styles.modal}>
+            <div className={styles.modalContent}>
+              <h2>⚠️ Confirmar Eliminación</h2>
+              <p>¿Estás seguro de que deseas eliminar esta propiedad?</p>
+              <p><strong>Esta acción es irreversible y eliminará todos los documentos asociados.</strong></p>
+              <div className={styles.modalActions}>
+                <button 
+                  onClick={() => setShowDeleteModal(false)}
+                  className={styles.cancelButton}
+                  disabled={deleting}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={handleEliminar} 
+                  disabled={deleting}
+                  className={styles.confirmDelete}
+                >
+                  {deleting ? 'Eliminando...' : 'SÍ, ELIMINAR'}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
