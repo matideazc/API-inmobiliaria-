@@ -50,6 +50,7 @@ model Expediente {
   estado              Estado      @default(PENDIENTE)
   comentariosRevisor  String?
   observaciones       String? // observaciones del revisor al cambiar el estado
+  observacionesVistas Boolean     @default(true) // indica si el asesor vio las observaciones (se pone en false al RECHAZAR)
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
   documentos          Documento[]

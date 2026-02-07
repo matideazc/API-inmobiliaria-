@@ -4,7 +4,8 @@ import {
   obtenerExpediente, 
   crearExpediente, 
   cambiarEstadoExpediente,
-  actualizarExpediente
+  marcarObservacionesVistas,
+  eliminarExpediente
 } from '../controllers/expedientes.controller';
 import { generarMandatoCompleto } from '../controllers/mandatos-completo.controller';
 import { autenticar, esAdmin, esAdminORevisor } from '../middlewares/auth.middleware';
@@ -40,13 +41,15 @@ router.get('/:id', autenticar, obtenerExpediente);
  */
 router.post('/', autenticar, crearExpediente);
 
+
 /**
  * PUT /expedientes/:id
  * Actualizar un expediente (solo PENDIENTE)
  * - ASESOR: Solo puede editar sus propias propiedades PENDIENTES
  * - ADMIN/REVISOR: Pueden editar cualquier propiedad PENDIENTE
+ * TODO: Implementar función actualizarExpediente
  */
-router.put('/:id', autenticar, actualizarExpediente);
+// router.put('/:id', autenticar, actualizarExpediente);
 
 /**
  * PUT /expedientes/:id/estado
@@ -59,10 +62,22 @@ router.put('/:id/estado', autenticar, esAdminORevisor, cambiarEstadoExpediente);
 router.patch('/:id/estado', autenticar, esAdminORevisor, cambiarEstadoExpediente);
 
 /**
+ * PUT /expedientes/:id/observaciones-vistas
+ * Marca las observaciones como vistas por el asesor
+ */
+router.put('/:id/observaciones-vistas', autenticar, marcarObservacionesVistas);
+
+/**
  * GET /propiedades/:id/mandato/word-completo
  * Genera mandato Word con datos autocompletados
  * Requiere autenticación
  */
 router.get('/:id/mandato/word-completo', autenticar, generarMandatoCompleto);
+
+/**
+ * DELETE /expedientes/:id
+ * Eliminar expediente (solo ADMIN)
+ */
+router.delete('/:id', autenticar, esAdmin, eliminarExpediente);
 
 export default router;

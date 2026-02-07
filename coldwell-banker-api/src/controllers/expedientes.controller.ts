@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma';
-
-// Estados permitidos del expediente
+import * as fs from 'fs';
+import * as path from 'path';
 const ESTADOS_PERMITIDOS = ['PENDIENTE', 'APROBADO', 'RECHAZADO'] as const;
 type EstadoExpediente = typeof ESTADOS_PERMITIDOS[number];
 
@@ -512,130 +512,125 @@ export const cambiarEstadoExpediente = async (req: Request, res: Response) => {
 };
 
 /**
- * PUT /expedientes/:id
- * Actualiza un expediente existente
- * 
- * Permisos:
- * - ASESOR: Solo puede editar sus propios expedientes EN ESTADO PENDIENTE
- * - REVISOR/ADMIN: Pueden editar cualquier expediente EN ESTADO PENDIENTE
- *
- * Restricción: Solo se pueden editar expedientes con estado PENDIENTE
+ * Marca las observaciones como vistas (solo el asesor dueño puede hacerlo)
  */
-export const actualizarExpediente = async (req: Request, res: Response) => {
+export const marcarObservacionesVistas = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const expedienteId = parseInt(id);
     const userId = req.usuario?.id;
-    const userRol = req.usuario?.rol;
 
-    // Validar ID
     if (isNaN(expedienteId)) {
       res.status(400).json({ error: 'ID de expediente inválido' });
       return;
     }
 
-    // Buscar expediente existente
-    const expedienteExistente = await prisma.expediente.findUnique({
+    // Buscar expediente
+    const expediente = await prisma.expediente.findUnique({
       where: { id: expedienteId },
-      select: {
-        id: true,
-        estado: true,
-        asesorId: true
-      }
+      select: { id: true, asesorId: true }
     });
 
-    if (!expedienteExistente) {
+    if (!expediente) {
       res.status(404).json({ error: 'Expediente no encontrado' });
       return;
     }
 
-    // Verificar que el expediente esté en estado PENDIENTE
-    if (expedienteExistente.estado !== 'PENDIENTE') {
-      res.status(403).json({ 
-        error: `No se puede editar un expediente en estado ${expedienteExistente.estado}. Solo se pueden editar expedientes PENDIENTES.` 
-      });
+    // Solo el asesor dueño puede marcar como vistas
+    if (expediente.asesorId !== userId) {
+      res.status(403).json({ error: 'No tienes permiso para marcar estas observaciones' });
       return;
     }
 
-    // Verificar permisos: ASESOR solo puede editar sus propios expedientes
-    if (userRol === 'ASESOR' && expedienteExistente.asesorId !== userId) {
-      res.status(403).json({ 
-        error: 'No tienes permiso para editar este expediente' 
-      });
-      return;
-    }
-
-    // Extraer campos del body
-    const {
-      titulo,
-      descripcion,
-      propietarioNombre,
-      direccion,
-      localidad,
-      api,
-      partidaInmobiliaria,
-      tipoPropiedad,
-      propietarios,
-      emails
-    } = req.body;
-
-    // Validar campos requeridos
-    if (!titulo) {
-      res.status(400).json({ error: 'El título es requerido' });
-      return;
-    }
-
-    // Auto-poblar propietarioNombre desde el array de propietarios
-    let propietarioNombreAuto = propietarioNombre?.trim() || null;
-    
-    if (propietarios && Array.isArray(propietarios) && propietarios.length > 0) {
-      const nombres = propietarios
-        .map((p: any) => p.nombreCompleto)
-        .filter((nombre: string) => nombre && nombre.trim())
-        .join(', ');
-      
-      if (nombres) {
-        propietarioNombreAuto = nombres;
-      }
-    }
-
-    // Actualizar el expediente
-    // @ts-ignore - Los tipos de Prisma se actualizan al reiniciar VS Code
-    const expedienteActualizado = await prisma.expediente.update({
+    // Marcar como vistas
+    await prisma.expediente.update({
       where: { id: expedienteId },
-      data: {
-        titulo: titulo.trim(),
-        descripcion: descripcion?.trim() || null,
-        propietarioNombre: propietarioNombreAuto,
-        direccion: direccion?.trim() || null,
-        localidad: localidad?.trim() || null,
-        api: api?.trim() || null,
-        partidaInmobiliaria: partidaInmobiliaria?.trim() || null,
-        tipoPropiedad: tipoPropiedad?.trim() || null,
-        propietarios: propietarios ? JSON.stringify(propietarios) : null,
-        emails: emails?.trim() || null
-      },
+      data: { observacionesVistas: true }
+    });
+
+    res.json({ mensaje: 'Observaciones marcadas como vistas' });
+  } catch (error) {
+    console.error('Error al marcar observaciones:', error instanceof Error ? error.message : 'Unknown error');
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+/**
+ * Elimina un expediente (solo ADMIN)
+ */
+export const eliminarExpediente = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const expedienteId = parseInt(id);
+
+    if (isNaN(expedienteId)) {
+      res.status(400).json({ error: 'ID de expediente inválido' });
+      return;
+    }
+
+    // Buscar expediente con documentos y mandato
+    const expediente = await prisma.expediente.findUnique({
+      where: { id: expedienteId },
       include: {
-        asesor: {
-          select: {
-            id: true,
-            nombre: true,
-            email: true,
-            rol: true
-          }
-        },
         documentos: true,
         mandato: true
       }
     });
 
-    res.json({
-      mensaje: 'Expediente actualizado exitosamente',
-      expediente: expedienteActualizado
+    if (!expediente) {
+      res.status(404).json({ error: 'Expediente no encontrado' });
+      return;
+    }
+
+    // 🔒 Prevenir path traversal: validar que las rutas estén dentro de uploads
+    const uploadsDir = path.resolve(__dirname, '../../uploads');
+    
+    // Eliminar archivos de documentos
+    for (const doc of expediente.documentos) {
+      try {
+        // 🔒 Prevenir path traversal: validar que la ruta esté dentro de uploads
+        const filePath = path.resolve(uploadsDir, doc.rutaArchivo);
+        
+        // Verificar que la ruta normalizada esté dentro del directorio permitido
+        if (!filePath.startsWith(uploadsDir + path.sep) && filePath !== uploadsDir) {
+          console.error(`⚠️ Path traversal attempt detected: ${doc.rutaArchivo}`);
+          continue;
+        }
+        
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      } catch (fileError) {
+        console.error(`Error al eliminar archivo ${doc.rutaArchivo}:`, fileError instanceof Error ? fileError.message : 'Unknown error');
+        // Continuar incluso si falla la eliminación de un archivo
+      }
+    }
+
+    // Eliminar archivo de mandato
+    if (expediente.mandato?.documentoUrl) {
+      try {
+        // 🔒 Prevenir path traversal: validar que la ruta esté dentro de uploads
+        const mandatoPath = path.resolve(uploadsDir, expediente.mandato.documentoUrl);
+        
+        // Verificar que la ruta normalizada esté dentro del directorio permitido
+        if (!mandatoPath.startsWith(uploadsDir + path.sep) && mandatoPath !== uploadsDir) {
+          console.error(`⚠️ Path traversal attempt detected in mandato: ${expediente.mandato.documentoUrl}`);
+        } else if (fs.existsSync(mandatoPath)) {
+          fs.unlinkSync(mandatoPath);
+        }
+      } catch (fileError) {
+        console.error(`Error al eliminar mandato:`, fileError instanceof Error ? fileError.message : 'Unknown error');
+      }
+    }
+
+    // Eliminar expediente (Prisma eliminará documentos y mandato en cascada)
+    await prisma.expediente.delete({
+      where: { id: expedienteId }
     });
 
+    res.json({ mensaje: 'Expediente eliminado exitosamente' });
   } catch (error) {
-    console.error('Error al actualizar expediente:', error);
+    console.error('Error al eliminar expediente:', error instanceof Error ? error.message : 'Unknown error');
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
