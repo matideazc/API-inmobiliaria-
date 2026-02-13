@@ -263,6 +263,12 @@ export const obtenerExpediente = async (req: Request, res: Response) => {
                         rutaArchivo: true,
                         createdAt: true
                     },
+                    include: {
+                        vistos: {
+                            where: { usuarioId: usuario.id }, // Solo los vistos por este usuario
+                            select: { visto: true }
+                        }
+                    },
                     orderBy: {
                         createdAt: 'desc'
                     }
@@ -704,6 +710,55 @@ export const enviarARevision = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error al enviar a revisión:', error instanceof Error ? error.message : 'Unknown error');
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+/**
+ * POST /documentos/:id/marcar-visto
+ * Marca un documento como visto por el usuario actual
+ * Disponible para todos los usuarios autenticados
+ */
+export const marcarDocumentoVisto = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const documentoId = parseInt(id);
+    const userId = req.usuario?.id;
+
+    if (isNaN(documentoId)) {
+      res.status(400).json({ error: 'ID de documento inválido' });
+      return;
+    }
+
+    // Verificar que el documento existe
+    const documento = await prisma.documento.findUnique({
+      where: { id: documentoId }
+    });
+
+    if (!documento) {
+      res.status(404).json({ error: 'Documento no encontrado' });
+      return;
+    }
+
+    // Crear o actualizar registro (upsert para evitar duplicados)
+    await prisma.documentoVisto.upsert({
+      where: {
+        documentoId_usuarioId: {
+          documentoId,
+          usuarioId: userId!
+        }
+      },
+      update: {
+        visto: new Date() // Actualizar timestamp si ya existía
+      },
+      create: {
+        documentoId,
+        usuarioId: userId!
+      }
+    });
+
+    res.json({ mensaje: 'Documento marcado como visto' });
+  } catch (error) {
+    console.error('Error al marcar documento:', error instanceof Error ? error.message : 'Unknown');
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

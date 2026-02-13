@@ -6,7 +6,8 @@ import {
   cambiarEstadoExpediente,
   marcarObservacionesVistas,
   eliminarExpediente,
-  enviarARevision
+  enviarARevision,
+  marcarDocumentoVisto
 } from '../controllers/expedientes.controller';
 import { generarMandatoCompleto } from '../controllers/mandatos-completo.controller';
 import { autenticar, esAdmin, esAdminORevisor } from '../middlewares/auth.middleware';
@@ -75,6 +76,13 @@ router.put('/:id/observaciones-vistas', autenticar, marcarObservacionesVistas);
  * Requiere al menos 1 documento cargado
  */
 router.put('/:id/enviar-revision', autenticar, enviarARevision);
+
+/**
+ * POST /documentos/:id/marcar-visto
+ * Marca un documento como visto por el usuario actual
+ * Todos los usuarios autenticados pueden marcar sus propios vistos
+ */
+router.post('/documentos/:id/marcar-visto', autenticar, marcarDocumentoVisto);
 
 /**
  * GET /propiedades/:id/mandato/word-completo

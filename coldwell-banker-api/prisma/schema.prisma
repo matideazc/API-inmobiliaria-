@@ -23,6 +23,7 @@ model Usuario {
   expedientes          Expediente[]            @relation("AsesorExpedientes")
   actividadesSemanales ActividadSemanal[]      @relation("AsesorActividades")
   objetivosConfig      ObjetivoConfiguracion[] @relation("AsesorObjetivosConfiguracion")
+  documentosVistos     DocumentoVisto[]      // 🆕 Documentos que este usuario marcó como vistos
 }
 
 
@@ -67,13 +68,14 @@ enum Estado {
 
 // ===== Documentos que sube el asesor =====
 model Documento {
-  id           Int        @id @default(autoincrement())
-  expediente   Expediente @relation(fields: [expedienteId], references: [id], onDelete: Cascade)
+  id           Int               @id @default(autoincrement())
+  expediente   Expediente        @relation(fields: [expedienteId], references: [id], onDelete: Cascade)
   expedienteId Int
   tipo         DocTipo
-  nombre       String? // nombre opcional del documento
-  rutaArchivo  String // acá va el path o la URL del PDF/foto
-  createdAt    DateTime   @default(now())
+  nombre       String?           // nombre opcional del documento
+  rutaArchivo  String            // acá va el path o la URL del PDF/foto
+  createdAt    DateTime          @default(now())
+  vistos       DocumentoVisto[]  // 🆕 Usuarios que vieron este documento
 }
 
 enum DocTipo {
@@ -168,4 +170,18 @@ model ObjetivoConfiguracion {
 
   @@unique([asesorId, tipoActividad, año])
   @@map("objetivo_configuracion") // Mantener nombre de tabla en DB por compatibilidad
+}
+
+// ===== Tracking de documentos vistos por usuarios =====
+model DocumentoVisto {
+  id           Int       @id @default(autoincrement())
+  documento    Documento @relation(fields: [documentoId], references: [id], onDelete: Cascade)
+  documentoId  Int
+  usuario      Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId    Int
+  visto        DateTime  @default(now()) // Cuándo lo vio por primera vez
+  
+  @@unique([documentoId, usuarioId]) // Un usuario solo puede marcar 1 vez el mismo doc
+  @@index([documentoId])
+  @@index([usuarioId])
 }
