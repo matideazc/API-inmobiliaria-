@@ -51,12 +51,16 @@ interface Propiedad {
   localidad?: string | null;
   api?: string | null;
   partidaInmobiliaria?: string | null;
-  propietarios?: string | null;
-  estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
+  emails?: string | null;
+  tipoPropiedad?: string | null;
+  propietarios: string;
+  asesor: Asesor;
+  asesorId: number;
+  estado: 'EN_PREPARACION' | 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
+  comentariosRevisor: string | null;
   observaciones: string | null;
   observacionesVistas: boolean;
   createdAt: string;
-  asesor?: Asesor;
   documentos?: Documento[];
   mandato?: Mandato | null;
 }
@@ -73,6 +77,7 @@ const PropiedadDetail = () => {
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [enviandoRevision, setEnviandoRevision] = useState(false);
   
   const [propietariosList, setPropietariosList] = useState<PropietarioDetalle[]>([]);
 
@@ -196,7 +201,7 @@ const PropiedadDetail = () => {
     }
   };
 
-  const handleStatusChange = (nuevoEstado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO', observaciones: string | null) => {
+  const handleStatusChange = (nuevoEstado: 'EN_PREPARACION' | 'PENDIENTE' | 'APROBADO' | 'RECHAZADO', observaciones: string | null) => {
     // Actualizar el estado local de la propiedad sin recargar toda la página
     setPropiedad(prev => prev ? {
       ...prev,
@@ -221,6 +226,26 @@ const PropiedadDetail = () => {
       setError(err?.response?.data?.error || 'Error al eliminar la propiedad');
       setDeleting(false);
       setShowDeleteModal(false);
+    }
+  };
+
+  const handleEnviarRevision = async () => {
+    try {
+      setEnviandoRevision(true);
+      const response = await api.put(`/expedientes/${id}/enviar-revision`);
+      
+      // Actualizar propiedad local con el nuevo estado
+      setPropiedad(response.data.expediente);
+      
+      // Mostrar mensaje de éxito
+      setSuccessMessage('✅ Propiedad enviada a revisión exitosamente');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (err: any) {
+      const errorMsg = err?.response?.data?.error || 'Error al enviar la propiedad a revisión';
+      setError(errorMsg);
+      setTimeout(() => setError(''), 5000);
+    } finally {
+      setEnviandoRevision(false);
     }
   };
 
@@ -289,6 +314,18 @@ const PropiedadDetail = () => {
               className={styles.deleteButton}
             >
               🗑️ Eliminar Propiedad
+            </button>
+          )}
+
+          {/* Botón ENVIAR A REVISIÓN (solo EN_PREPARACION + owner) */}
+          {propiedad.estado === 'EN_PREPARACION' && 
+           propiedad.asesor.id === user?.id && (
+            <button 
+              onClick={handleEnviarRevision} 
+              className={styles.enviarRevisionButton}
+              disabled={enviandoRevision}
+            >
+              {enviandoRevision ? '⏳ Enviando...' : '📤 Enviar a Revisión'}
             </button>
           )}
         </div>
