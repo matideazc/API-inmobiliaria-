@@ -12,6 +12,7 @@ interface Documento {
   nombre?: string | null; // Nombre del archivo subido
   rutaArchivo: string;
   createdAt: string;
+  vistos?: { visto: string }[]; // 🆕 Array de vistas del usuario actual
 }
 
 interface Asesor {
@@ -87,12 +88,14 @@ const PropiedadDetail = () => {
   // Verificar si el usuario puede cambiar el estado
   const canChangeStatus = user?.rol === 'ADMIN' || user?.rol === 'REVISOR';
 
-  // Verificar si el usuario puede editar la propiedad (solo si está PENDIENTE)
+  // Verificar si el usuario puede editar la propiedad
+  // Asesores pueden editar EN_PREPARACION y PENDIENTE (si es suya)
+  // ADMIN/REVISOR pueden editar PENDIENTE
   const canEditProperty = 
-    propiedad?.estado === 'PENDIENTE' &&
-    (user?.rol === 'ADMIN' || 
-     user?.rol === 'REVISOR' || 
-     (user?.rol === 'ASESOR' && propiedad?.asesor?.id === user?.id));
+    ((propiedad?.estado === 'EN_PREPARACION' || propiedad?.estado === 'PENDIENTE') &&
+     (user?.rol === 'ADMIN' || 
+      user?.rol === 'REVISOR' || 
+      (user?.rol === 'ASESOR' && propiedad?.asesor?.id === user?.id)));
 
   const canDownloadMandato = 
     propiedad?.mandato &&
@@ -166,6 +169,47 @@ const PropiedadDetail = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
+
+  const descargarDocumento = async (docId: number, rutaArchivo: string) => {
+    try {
+      const response = await api.get(`/documentos/${docId}`, {
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      const filename = rutaArchivo.split('/').pop() || `documento-${docId}.pdf`;
+      link.setAttribute('download', filename);
+      
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error al descargar documento:', err);
+      throw err;
+    }
+  };
+
+  // 🆕 Handler para descargar y marcar como visto
+  const handleDocumentoClick = async (docId: number, rutaArchivo: string) => {
+    try {
+      // Descargar documento
+      await descargarDocumento(docId, rutaArchivo);
+      
+      // Marcar como visto
+      await api.post(`/documentos/${docId}/marcar-visto`);
+      
+      // Refrescar propiedad para mostrar el tilde verde
+      await fetchPropiedad();
+    } catch (err: any) {
+      console.error('Error:', err instanceof Error ? err.message : 'Unknown');
+      setError(err?.response?.data?.error || 'Error al procesar el documento');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
 
   const fetchPropiedad = async () => {
     try {
@@ -563,33 +607,47 @@ const PropiedadDetail = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {propiedad.documentos.map((doc) => (
-                        <tr key={doc.id}>
-                          <td className={styles.docType}>
-                            <strong>{formatDocumentType(doc.tipo)}</strong>
-                          </td>
-                          <td>{doc.nombre || 'Sin nombre'}</td>
-                          <td>
-                            {new Date(doc.createdAt).toLocaleDateString('es-AR', {
-                              day: '2-digit',
-                              month: '2-digit',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </td>
-                          <td>
-                            <a 
-                              href={`${import.meta.env.VITE_API_URL}/${doc.rutaArchivo}`}
-                              target="_blank" 
-                              rel="noreferrer"
-                              className={styles.viewDocButton}
-                            >
-                              ver documento
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
+                      {propiedad.documentos.map((doc) => {
+                        // 🆕 Determinar si el usuario actual ya vio este documento
+                        const yaVisto = doc.vistos && doc.vistos.length > 0;
+                        
+                        return (
+                          <tr key={doc.id}>
+                            <td className={styles.docType}>
+                              {formatDocumentType(doc.tipo)}
+                            </td>
+                            <td className={styles.docName}>
+                              {doc.nombre || 'Sin nombre'}
+                            </td>
+                            <td className={styles.docDate}>
+                              {new Date(doc.createdAt).toLocaleString('es-AR', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </td>
+                            <td className={styles.docActions}>
+                              <div className={styles.actionsContainer}>
+                                {/* 🆕 Tilde verde si ya fue visto */}
+                                {yaVisto && (
+                                  <span className={styles.vistoIndicator} title="Ya viste este documento">
+                                    ✅
+                                  </span>
+                                )}
+                                <button
+                                  onClick={() => handleDocumentoClick(doc.id, doc.rutaArchivo)}
+                                  className={yaVisto ? styles.downloadButtonVisto : styles.downloadButton}
+                                  title={yaVisto ? "Volver a descargar" : "Descargar documento"}
+                                >
+                                  📥 Descargar
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

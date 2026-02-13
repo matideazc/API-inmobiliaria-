@@ -34,6 +34,70 @@
   transform: translateY(-2px);
 }
 
+.viewDocButton:hover {
+  background: linear-gradient(135deg, #0088cc, #006aa8);
+  transform: translateY(-1px);
+}
+
+/* 🆕 Tracking de documentos vistos */
+.actionsContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.vistoIndicator {
+  font-size: 1.2rem;
+  animation: fadeIn 0.3s ease-in;
+  filter: drop-shadow(0 0 3px rgba(16, 185, 129, 0.5));
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.downloadButton {
+  background: linear-gradient(135deg, #00AEEF, #0088cc);
+  color: white;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.downloadButton:hover {
+  background: linear-gradient(135deg, #0088cc, #006aa8);
+  transform: translateY(-1px);
+}
+
+.downloadButtonVisto {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.downloadButtonVisto:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-1px);
+}
+
 /* Top actions container */
 .topActions {
   display: flex;
