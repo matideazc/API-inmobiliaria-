@@ -5,7 +5,8 @@ import {
   crearExpediente, 
   cambiarEstadoExpediente,
   marcarObservacionesVistas,
-  eliminarExpediente
+  eliminarExpediente,
+  enviarARevision
 } from '../controllers/expedientes.controller';
 import { generarMandatoCompleto } from '../controllers/mandatos-completo.controller';
 import { autenticar, esAdmin, esAdminORevisor } from '../middlewares/auth.middleware';
@@ -66,6 +67,14 @@ router.patch('/:id/estado', autenticar, esAdminORevisor, cambiarEstadoExpediente
  * Marca las observaciones como vistas por el asesor
  */
 router.put('/:id/observaciones-vistas', autenticar, marcarObservacionesVistas);
+
+/**
+ * PUT /expedientes/:id/enviar-revision
+ * Envía la propiedad a revisión (cambia de EN_PREPARACION a PENDIENTE)
+ * Solo el asesor dueño puede hacerlo
+ * Requiere al menos 1 documento cargado
+ */
+router.put('/:id/enviar-revision', autenticar, enviarARevision);
 
 /**
  * GET /propiedades/:id/mandato/word-completo

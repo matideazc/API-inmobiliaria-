@@ -47,7 +47,7 @@ model Expediente {
   propietarios        String? // JSON array de objetos propietario (nombreCompleto, dni, fechaNacimiento, etc.)
   asesor              Usuario     @relation("AsesorExpedientes", fields: [asesorId], references: [id])
   asesorId            Int
-  estado              Estado      @default(PENDIENTE)
+  estado              Estado      @default(EN_PREPARACION)
   comentariosRevisor  String?
   observaciones       String? // observaciones del revisor al cambiar el estado
   observacionesVistas Boolean     @default(true) // indica si el asesor vio las observaciones (se pone en false al RECHAZAR)
@@ -59,7 +59,8 @@ model Expediente {
 }
 
 enum Estado {
-  PENDIENTE
+  EN_PREPARACION  // Asesor prepara la propiedad antes de enviar
+  PENDIENTE       // Enviada a revisión del corredor
   APROBADO
   RECHAZADO
 }

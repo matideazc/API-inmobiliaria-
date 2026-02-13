@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../prisma';
 import * as fs from 'fs';
 import * as path from 'path';
-const ESTADOS_PERMITIDOS = ['PENDIENTE', 'APROBADO', 'RECHAZADO'] as const;
+const ESTADOS_PERMITIDOS = ['EN_PREPARACION', 'PENDIENTE', 'APROBADO', 'RECHAZADO'] as const;
 type EstadoExpediente = typeof ESTADOS_PERMITIDOS[number];
 
 /**
@@ -631,6 +631,79 @@ export const eliminarExpediente = async (req: Request, res: Response) => {
     res.json({ mensaje: 'Expediente eliminado exitosamente' });
   } catch (error) {
     console.error('Error al eliminar expediente:', error instanceof Error ? error.message : 'Unknown error');
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+/**
+ * PUT /expedientes/:id/enviar-revision
+ * Cambia estado de EN_PREPARACION a PENDIENTE (envía a revisión del corredor)
+ * Solo el asesor dueño puede hacerlo
+ * Requiere al menos 1 documento cargado
+ */
+export const enviarARevision = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const expedienteId = parseInt(id);
+    const userId = req.usuario?.id;
+
+    if (isNaN(expedienteId)) {
+      res.status(400).json({ error: 'ID de expediente inválido' });
+      return;
+    }
+
+    // Buscar expediente con documentos
+    const expediente = await prisma.expediente.findUnique({
+      where: { id: expedienteId },
+      include: { documentos: true }
+    });
+
+    if (!expediente) {
+      res.status(404).json({ error: 'Expediente no encontrado' });
+      return;
+    }
+
+    // Solo el asesor dueño puede enviar
+    if (expediente.asesorId !== userId) {
+      res.status(403).json({ error: 'No tienes permiso para enviar esta propiedad' });
+      return;
+    }
+
+    // Solo se puede enviar si está EN_PREPARACION
+    if (expediente.estado !== 'EN_PREPARACION') {
+      res.status(400).json({ 
+        error: 'Solo se pueden enviar propiedades que están en preparación' 
+      });
+      return;
+    }
+
+    // Validar que tenga al menos 1 documento
+    if (expediente.documentos.length === 0) {
+      res.status(400).json({ 
+        error: 'Debes cargar al menos 1 documento antes de enviar la propiedad a revisión' 
+      });
+      return;
+    }
+
+    // Cambiar estado a PENDIENTE
+    const expedienteActualizado = await prisma.expediente.update({
+      where: { id: expedienteId },
+      data: { estado: 'PENDIENTE' },
+      include: {
+        asesor: {
+          select: { id: true, nombre: true, email: true }
+        },
+        documentos: true,
+        mandato: true
+      }
+    });
+
+    res.json({ 
+      mensaje: 'Propiedad enviada a revisión exitosamente',
+      expediente: expedienteActualizado 
+    });
+  } catch (error) {
+    console.error('Error al enviar a revisión:', error instanceof Error ? error.message : 'Unknown error');
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
