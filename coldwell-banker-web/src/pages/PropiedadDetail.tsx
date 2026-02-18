@@ -380,7 +380,11 @@ const PropiedadDetail = () => {
             <h1>{propiedad.titulo}</h1>
             <div className={styles.headerRight}>
               <span className={`${styles.statusBadge} ${styles[`status${propiedad.estado}`]}`}>
-                {propiedad.estado}
+                {propiedad.estado === 'EN_PREPARACION' ? 'En Preparación' :
+                 propiedad.estado === 'PENDIENTE' ? 'Pendiente' :
+                 propiedad.estado === 'APROBADO' ? 'Aprobado' :
+                 propiedad.estado === 'RECHAZADO' ? 'Rechazado' :
+                 propiedad.estado}
               </span>
             </div>
           </div>
