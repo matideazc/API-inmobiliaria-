@@ -256,13 +256,6 @@ export const obtenerExpediente = async (req: Request, res: Response) => {
                     }
                 },
                 documentos: {
-                    select: {
-                        id: true,
-                        tipo: true,
-                        nombre: true,
-                        rutaArchivo: true,
-                        createdAt: true
-                    },
                     include: {
                         vistos: {
                             where: { usuarioId: usuario.id }, // Solo los vistos por este usuario
