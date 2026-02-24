@@ -49,8 +49,10 @@ export const descargarDocumento = async (req: Request, res: Response) => {
         }
 
         // SEGURIDAD: Validar que el archivo existe y está dentro de uploads/
-        const rutaCompleta = path.resolve(documento.rutaArchivo);
-        const uploadsBase = path.resolve(process.cwd(), 'uploads');
+        // Usar __dirname para obtener la ruta absoluta correcta en Railway
+        const projectRoot = path.resolve(__dirname, '..', '..');
+        const uploadsBase = path.join(projectRoot, 'uploads');
+        const rutaCompleta = path.join(projectRoot, documento.rutaArchivo);
 
         if (!rutaCompleta.startsWith(uploadsBase)) {
             console.error('Intento de acceso fuera de uploads:', rutaCompleta);
