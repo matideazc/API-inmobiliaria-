@@ -115,7 +115,13 @@ export const listarExpedientes = async (req: Request, res: Response) => {
                 where.asesorId = asesorIdNum;
             }
         }
-        // Filtro por estado
+        // RESTRICCIÓN REVISOR: no puede ver propiedades EN_PREPARACION
+        // Solo ve las que ya fueron enviadas a revisión (PENDIENTE, APROBADO, RECHAZADO)
+        if (usuario.rol === 'REVISOR') {
+            where.estado = { not: 'EN_PREPARACION' };
+        }
+        // Filtro por estado (sobrescribe el filtro de REVISOR si se pasa estado explícito,
+        // pero REVISOR nunca debería pasar EN_PREPARACION desde el frontend)
         if (estado) {
             where.estado = estado;
         }
