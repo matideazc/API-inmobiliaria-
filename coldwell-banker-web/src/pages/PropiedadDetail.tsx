@@ -361,9 +361,9 @@ const PropiedadDetail = () => {
             </button>
           )}
 
-          {/* Botón ENVIAR A REVISIÓN (solo EN_PREPARACION + owner) */}
+          {/* Botón ENVIAR A REVISIÓN (EN_PREPARACION: asesor dueño o ADMIN) */}
           {propiedad.estado === 'EN_PREPARACION' && 
-           propiedad.asesor.id === user?.id && (
+           (propiedad.asesor.id === user?.id || user?.rol === 'ADMIN') && (
             <button 
               onClick={handleEnviarRevision} 
               className={styles.enviarRevisionButton}
