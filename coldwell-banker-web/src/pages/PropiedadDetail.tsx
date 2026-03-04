@@ -172,7 +172,7 @@ const PropiedadDetail = () => {
 
   const descargarDocumento = async (docId: number, rutaArchivo: string) => {
     try {
-      const response = await api.get(`/documentos/${docId}`, {
+      const response = await api.get(`/documentos/${docId}/download`, {
         responseType: 'blob'
       });
 
